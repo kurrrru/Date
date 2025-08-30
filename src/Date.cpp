@@ -109,6 +109,26 @@ toolbox::Date& toolbox::Date::operator-=(const int delta) {
 
 void toolbox::Date::convert_form_serial_date(toolbox::CalendarSystem cal_sys,
         std::string& era, int& year, int& month, int& day) const {
+    switch (cal_sys) {
+        case toolbox::GREGORIAN:
+            // toolbox::CalendarSystem::Gregorian::from_serial_date(_serial_date,
+            //         era, year, month, day);
+            break;
+        case toolbox::JULIAN:
+            // toolbox::CalendarSystem::Julian::from_serial_date(_serial_date,
+            //         era, year, month, day);
+            break;
+        case toolbox::JAPANESE_WAREKI:
+            // toolbox::CalendarSystem::JapaneseWareki::from_serial_date(_serial_date,
+            //         era, year, month, day);
+            break;
+        case toolbox::FRENCH_REVOLUTIONARY:
+            // toolbox::CalendarSystem::FrenchRevolutionary::from_serial_date(_serial_date,
+            //         era, year, month, day);
+            break;
+        default:
+            throw std::invalid_argument("Invalid calendar system");
+        }
     // later
 }
 
