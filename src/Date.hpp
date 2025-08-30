@@ -16,9 +16,9 @@ class Date {
     explicit Date(int serial_date);
     Date(CalendarSystem cal_sys, int day, int month, int year);
     Date(CalendarSystem cal_sys, const std::string& date_str,
-            const char* format = "%Y-%m-%d");
+            const char* format = "%y-%m-%d");
 
-    std::string to_string(const char* format = "%Y-%m-%d") const;
+    std::string to_string(const char* format = "%y-%m-%d") const;
 
     int get_raw_date() const;
     int get_day(CalendarSystem cal_sys) const;
@@ -41,7 +41,7 @@ class Date {
     void convert_form_serial_date(CalendarSystem cal_sys,
             std::string& era, int& year, int& month, int& day) const;
     int convert_to_serial_date(CalendarSystem cal_sys,
-            std::string era, int year, int month, int day) const;
+            const std::string& era, int year, int month, int day) const;
 
     int _serial_date;  // 0 mean 1970-01-01 (Unix epoch)
 };
