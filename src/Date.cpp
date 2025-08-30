@@ -107,6 +107,30 @@ toolbox::Date& toolbox::Date::operator-=(const int delta) {
     return *this;
 }
 
+bool toolbox::Date::operator==(const Date& other) const {
+    return _serial_date == other._serial_date;
+}
+
+bool toolbox::Date::operator!=(const Date& other) const {
+    return !(*this == other);
+}
+
+bool toolbox::Date::operator<(const Date& other) const {
+    return _serial_date < other._serial_date;
+}
+
+bool toolbox::Date::operator<=(const Date& other) const {
+    return (*this < other) || (*this == other);
+}
+
+bool toolbox::Date::operator>(const Date& other) const {
+    return !(*this <= other);
+}
+
+bool toolbox::Date::operator>=(const Date& other) const {
+    return !(*this < other);
+}
+
 void toolbox::Date::convert_form_serial_date(toolbox::CalendarSystem cal_sys,
         std::string& era, int& year, int& month, int& day) const {
     switch (cal_sys) {

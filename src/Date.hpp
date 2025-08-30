@@ -39,6 +39,13 @@ class Date {
     Date& operator+=(const int delta);
     Date& operator-=(const int delta);
 
+    bool operator==(const Date& other) const;
+    bool operator!=(const Date& other) const;
+    bool operator<(const Date& other) const;
+    bool operator<=(const Date& other) const;
+    bool operator>(const Date& other) const;
+    bool operator>=(const Date& other) const;
+
  private:
     void convert_form_serial_date(CalendarSystem cal_sys,
             std::string& era, int& year, int& month, int& day) const;
