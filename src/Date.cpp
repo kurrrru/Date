@@ -166,6 +166,7 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
     return calendar_system.to_serial_date(date_str, format);
 }
 
+// When adding a new calendar system, add it here.
 toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSystem cal_sys) const {
     static GregorianCalendar gregorian_calendar;
     static JulianCalendar julian_calendar;
