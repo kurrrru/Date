@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <calender_system/CalenderSystem.hpp>
+#include <calender_system/ICalendarSystem.hpp>
 
 namespace toolbox {
 
@@ -57,6 +58,7 @@ class Date {
             const std::string& era, int year, int month, int day) const;
     int convert_to_serial_date(CalendarSystem cal_sys,
             const std::string& date_str, const char* format) const;
+    ICalendarSystem& get_calendar_system(CalendarSystem cal_sys) const;
 
     int _serial_date;  // 0 mean 1970-01-01 (Unix epoch)
 };
