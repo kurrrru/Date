@@ -21,7 +21,7 @@ toolbox::Date::~Date() {}
 toolbox::Date::Date(int serial_date) : _serial_date(serial_date) {}
 
 toolbox::Date::Date(toolbox::CalendarSystem cal_sys, const std::string& era,
-        int day, int month, int year) {
+        int year, int month, int day) {
     _serial_date = convert_to_serial_date(cal_sys, era, year, month, day);
 }
 
@@ -169,19 +169,19 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
 // When adding a new calendar system, add it here.
 toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSystem cal_sys) const {
     static GregorianCalendar gregorian_calendar;
-    static JulianCalendar julian_calendar;
-    static JapaneseWarekiCalendar japanese_wareki_calendar;
-    static FrenchRevolutionaryCalendar french_revolutionary_calendar;
+    // static JulianCalendar julian_calendar;
+    // static JapaneseWarekiCalendar japanese_wareki_calendar;
+    // static FrenchRevolutionaryCalendar french_revolutionary_calendar;
 
     switch (cal_sys) {
         case toolbox::GREGORIAN:
             return gregorian_calendar;
-        case toolbox::JULIAN:
-            return julian_calendar;
-        case toolbox::JAPANESE_WAREKI:
-            return japanese_wareki_calendar;
-        case toolbox::FRENCH_REVOLUTIONARY:
-            return french_revolutionary_calendar;
+        // case toolbox::JULIAN:
+        //     return julian_calendar;
+        // case toolbox::JAPANESE_WAREKI:
+        //     return japanese_wareki_calendar;
+        // case toolbox::FRENCH_REVOLUTIONARY:
+        //     return french_revolutionary_calendar;
         default:
             throw std::invalid_argument("Invalid calendar system");
     }

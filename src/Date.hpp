@@ -16,7 +16,7 @@ class Date {
 
     explicit Date(int serial_date);
     Date(CalendarSystem cal_sys, const std::string& era,
-        int day, int month, int year);
+        int year, int month, int day);
     Date(CalendarSystem cal_sys, const std::string& date_str,
             const char* format = "%y-%m-%d");
 
