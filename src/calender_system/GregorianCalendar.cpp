@@ -3,8 +3,9 @@
 #include <iostream>
 
 namespace {
-bool is_leap(int year);
 
+bool is_leap(int year);
+int last_day_of_month(int year, int month);
 
 }  // namespace
 
@@ -87,4 +88,14 @@ bool is_leap(int year) {
     return !(year & 0x3) && (year % 100 != 0 || year % 400 == 0);
 }
 
+int last_day_of_month(int year, int month) {
+    static const int last_day[12] = {
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+    };
+    if (month == 2 && is_leap(year)) {
+        return 29;
+    }
+    return last_day[month - 1];
 }
+
+}  // namespace
