@@ -29,7 +29,12 @@ GregorianCalendar::~GregorianCalendar() {
 int GregorianCalendar::to_serial_date(const std::string& era,
         int year, int month, int day) const {
     (void)era;
-    // Hinnant's algorithm
+    if (month < 1 || month > 12) {
+        throw std::out_of_range("month must be 1-12");
+    }
+    if (day < 1 || day > last_day_of_month(year, month)) {
+        throw std::out_of_range("day is out of range for month");
+    }
     year -= !!(month <= 2);
     const int era_year = (year >= 0 ? year : year - 399) / 400;
     const unsigned int yoe = static_cast<unsigned int>(year - era_year * 400);
