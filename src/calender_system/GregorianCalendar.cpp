@@ -26,7 +26,7 @@ GregorianCalendar& GregorianCalendar::operator=(const GregorianCalendar& other) 
 GregorianCalendar::~GregorianCalendar() {
 }
 
-int GregorianCalendar::to_serial_date(const std::string& era,
+int GregorianCalendar::to_serial_date(int era,
         int year, int month, int day) const {
     (void)era;
     if (month < 1 || month > 12) {
@@ -56,7 +56,7 @@ int GregorianCalendar::to_serial_date(const std::string& date_str,
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,
-        std::string& era, int& year, int& month, int& day) const {
+        int& era, int& year, int& month, int& day) const {
     (void)era;
     // Hinnant's algorithm
     int z = serial_date + 719468;

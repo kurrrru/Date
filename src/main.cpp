@@ -6,7 +6,7 @@
 #include <sstream>
 
 int main() {
-    toolbox::Date date1(toolbox::GREGORIAN, toolbox::GregorianCalendar::AD, 1, 1, 1);
+    toolbox::Date date1(toolbox::GREGORIAN, toolbox::GregorianCalendar::AD, 2025, 9, 2);
     std::stringstream ss;
     ss << "Date1: " << date1.get_year(toolbox::GREGORIAN) << "-"
         << date1.get_month(toolbox::GREGORIAN) << "-"
