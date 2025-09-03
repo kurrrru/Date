@@ -20,6 +20,7 @@ int main() {
         << date1.get_day(toolbox::GREGORIAN) << std::endl;
     std::cout << "Raw date (days since 1970-01-01): " << date1.get_raw_date() << std::endl;
     std::cout << "day of week (0=Sun,...,6=Sat): " << date1.get_weekday(toolbox::GREGORIAN) << std::endl;
+    std::cout << "Formatted date: " << date1.to_string(toolbox::GREGORIAN, "%Y(%E)-%M-%D (%W), %y(%e)-%m-%d (%w)") << std::endl;
 
     toolbox::GregorianCalendar gc;
     int era, year, month, day;

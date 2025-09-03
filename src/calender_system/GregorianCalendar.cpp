@@ -1,6 +1,9 @@
 #include <calender_system/GregorianCalendar.hpp>
 
 #include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 #include <string.hpp>
 
@@ -8,7 +11,11 @@ namespace {
 
 bool is_leap(int year);
 int last_day_of_month(int year, int month);
-std::string era_to_string(int era);
+std::string to_string_Ee(int era, bool uppercase);
+std::string to_string_Yy(int year, bool uppercase);
+std::string to_string_Mm(int month, bool uppercase);
+std::string to_string_Dd(int day, bool uppercase);
+std::string to_string_Ww(int day_of_week, bool uppercase);
 
 }  // namespace
 
@@ -32,21 +39,27 @@ GregorianCalendar::~GregorianCalendar() {
 int GregorianCalendar::to_serial_date(int era,
         int year, int month, int day) const {
     if (era < 0 || era >= END_OF_ERA) {
-        throw std::out_of_range("Invalid era: " + toolbox::to_string(era));
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+            "Invalid era: " + toolbox::to_string(era));
     }
     if (year < 0) {
-        throw std::out_of_range("year must be positive");
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+            "year must be positive");
     } else if (year == 0) {
-        throw std::out_of_range("year 0 does not exist in Gregorian calendar");
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+            "year 0 does not exist in Gregorian calendar");
     }
     if (era == BC) {
         year = 1 - year;
     }
     if (month < 1 || month > 12) {
-        throw std::out_of_range("month must be 1-12");
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+            "month must be in 1..12");
     }
     if (day < 1 || day > last_day_of_month(year, month)) {
-        throw std::out_of_range("day is out of range for month");
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+            "day is out of range for month " + toolbox::to_string(month)
+            + " of year " + toolbox::to_string(year));
     }
     year -= !!(month <= 2);
     const int era_year = (year >= 0 ? year : year - 399) / 400;
@@ -89,10 +102,47 @@ void GregorianCalendar::from_serial_date(int serial_date,
 
 void GregorianCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
-    // later
-    (void)serial_date;
-    (void)date_str;
-    (void)format;
+    int era, year, month, day;
+    from_serial_date(serial_date, era, year, month, day);
+    int day_of_week;
+    from_serial_date(serial_date, day_of_week);
+    std::ostringstream ss;
+    // very simple implementation
+    for (std::size_t i = 0; format[i]; ++i) {
+        if (format[i] == '%') {
+            switch (format[++i]) {
+                case 'E':
+                case 'e':
+                    ss << to_string_Ee(era, std::isupper(format[i]));
+                    break;
+                case 'Y':
+                case 'y':
+                    ss << to_string_Yy(year, std::isupper(format[i]));
+                    break;
+                case 'M':
+                case 'm':
+                    ss << to_string_Mm(month, std::isupper(format[i]));
+                    break;
+                case 'D':
+                case 'd':
+                    ss << to_string_Dd(day, std::isupper(format[i]));
+                    break;
+                case 'W':
+                case 'w':
+                    ss << to_string_Ww(day_of_week, std::isupper(format[i]));
+                    break;
+                case '%':
+                    ss << '%';
+                    break;
+                default:
+                    throw std::invalid_argument("GregorianCalendar::from_serial_date failed:"
+                        "Invalid format specifier: %" + toolbox::to_string(format[i]));
+            }
+        } else {
+            ss << format[i];
+        }
+    }
+    date_str = ss.str();
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,
@@ -119,15 +169,75 @@ int last_day_of_month(int year, int month) {
     return last_day[month - 1];
 }
 
-std::string era_to_string(int era) {
-    static const char* era_str[] = {
+std::string to_string_Ee(int era, bool uppercase) {
+    static const char* era_str_E[] = {
+        [toolbox::GregorianCalendar::BC] = "B.C.",
+        [toolbox::GregorianCalendar::AD] = "A.D.",
+    };
+    static const char* era_str_e[] = {
         [toolbox::GregorianCalendar::BC] = "BC",
         [toolbox::GregorianCalendar::AD] = "AD",
     };
     if (era < 0 || era >= toolbox::GregorianCalendar::END_OF_ERA) {
-        throw std::out_of_range("Invalid era");
+        throw std::out_of_range("era_to_string: Invalid era: " + toolbox::to_string(era));
     }
-    return std::string(era_str[era]);
+    return uppercase ? era_str_E[era] : era_str_e[era];
+}
+
+std::string to_string_Yy(int year, bool uppercase) {
+    if (year < 0) {
+        throw std::out_of_range("year_to_string: year must be positive");
+    } else if (year == 0) {
+        throw std::out_of_range("year_to_string: year 0 does not exist in Gregorian calendar");
+    }
+    std::ostringstream oss;
+    if (uppercase) {
+        oss << year;
+    } else {
+        oss << std::setw(2) << std::setfill('0') << (year % 100);
+    }
+    return oss.str();
+}
+
+std::string to_string_Mm(int month, bool uppercase) {
+    if (month < 1 || month > 12) {
+        throw std::out_of_range("month_to_string: month must be in 1..12");
+    }
+    std::ostringstream oss;
+    if (uppercase) {
+        oss << month;
+    } else {
+        oss << std::setw(2) << std::setfill('0') << month;
+    }
+    return oss.str();
+}
+
+std::string to_string_Dd(int day, bool uppercase) {
+    if (day < 1 || day > 31) {
+        throw std::out_of_range("day_to_string: day must be in 1..31");
+    }
+    std::ostringstream oss;
+    if (uppercase) {
+        oss << day;
+    } else {
+        oss << std::setw(2) << std::setfill('0') << day;
+    }
+    return oss.str();
+}
+
+std::string to_string_Ww(int day_of_week, bool uppercase) {
+    static const char* day_of_week_str_W[] = {
+        "Sunday", "Monday", "Tuesday", "Wednesday",
+        "Thursday", "Friday", "Saturday"
+    };
+    static const char* day_of_week_str_w[] = {
+        "Sun.", "Mon.", "Tue.", "Wed.",
+        "Thu.", "Fri.", "Sat."
+    };
+    if (day_of_week < 0 || day_of_week > 6) {
+        throw std::out_of_range("day_of_week_to_string: day_of_week must be in 0..6");
+    }
+    return uppercase ? day_of_week_str_W[day_of_week] : day_of_week_str_w[day_of_week];
 }
 
 }  // namespace
