@@ -20,7 +20,7 @@ toolbox::Date::~Date() {}
 
 toolbox::Date::Date(int serial_date) : _serial_date(serial_date) {}
 
-toolbox::Date::Date(toolbox::CalendarSystem cal_sys, const std::string& era,
+toolbox::Date::Date(toolbox::CalendarSystem cal_sys, int era,
         int year, int month, int day) {
     _serial_date = convert_to_serial_date(cal_sys, era, year, month, day);
 }
@@ -42,22 +42,19 @@ int toolbox::Date::get_raw_date() const {
 }
 
 int toolbox::Date::get_day(toolbox::CalendarSystem cal_sys) const {
-    std::string era;
-    int year, month, day;
+    int era, year, month, day;
     convert_form_serial_date(cal_sys, era, year, month, day);
     return day;
 }
 
 int toolbox::Date::get_month(toolbox::CalendarSystem cal_sys) const {
-    std::string era;
-    int year, month, day;
+    int era, year, month, day;
     convert_form_serial_date(cal_sys, era, year, month, day);
     return month;
 }
 
 int toolbox::Date::get_year(toolbox::CalendarSystem cal_sys) const {
-    std::string era;
-    int year, month, day;
+    int era, year, month, day;
     convert_form_serial_date(cal_sys, era, year, month, day);
     return year;
 }
@@ -137,7 +134,7 @@ bool toolbox::Date::operator>=(const Date& other) const {
 }
 
 void toolbox::Date::convert_form_serial_date(toolbox::CalendarSystem cal_sys,
-        std::string& era, int& year, int& month, int& day) const {
+        int& era, int& year, int& month, int& day) const {
     ICalendarSystem& calendar_system = get_calendar_system(cal_sys);
     calendar_system.from_serial_date(_serial_date, era, year, month, day);
 }
@@ -155,7 +152,7 @@ void toolbox::Date::convert_from_serial_date(toolbox::CalendarSystem cal_sys,
 }
 
 int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
-        const std::string& era, int year, int month, int day) const {
+        int era, int year, int month, int day) const {
     ICalendarSystem& calendar_system = get_calendar_system(cal_sys);
     return calendar_system.to_serial_date(era, year, month, day);
 }

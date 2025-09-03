@@ -13,12 +13,10 @@ class JapaneseWarekiCalendar : public ICalendarSystem {
     JapaneseWarekiCalendar& operator=(const JapaneseWarekiCalendar& other);
     ~JapaneseWarekiCalendar();
 
-    int to_serial_date(const std::string& era,
-            int year, int month, int day) const;
-    int to_serial_date(const std::string& date_str,
-            const char* format) const;
+    int to_serial_date(int era, int year, int month, int day) const;
+    int to_serial_date(const std::string& date_str, const char* format) const;
     void from_serial_date(int serial_date,
-            std::string& era, int& year, int& month, int& day) const;
+            int& era, int& year, int& month, int& day) const;
     void from_serial_date(int serial_date,
             std::string& date_str, const char* format) const;
     void from_serial_date(int serial_date,

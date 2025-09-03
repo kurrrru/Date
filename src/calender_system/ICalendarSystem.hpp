@@ -8,12 +8,12 @@ class ICalendarSystem {
  public:
     virtual ~ICalendarSystem() {}
 
-    virtual int to_serial_date(const std::string& era,
+    virtual int to_serial_date(int era,
             int year, int month, int day) const = 0;
     virtual int to_serial_date(const std::string& date_str,
             const char* format) const = 0;
     virtual void from_serial_date(int serial_date,
-            std::string& era, int& year, int& month, int& day) const = 0;
+            int& era, int& year, int& month, int& day) const = 0;
     virtual void from_serial_date(int serial_date,
             std::string& date_str, const char* format) const = 0;
     virtual void from_serial_date(int serial_date,

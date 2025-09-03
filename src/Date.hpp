@@ -15,8 +15,7 @@ class Date {
     ~Date();
 
     explicit Date(int serial_date);
-    Date(CalendarSystem cal_sys, const std::string& era,
-        int year, int month, int day);
+    Date(CalendarSystem cal_sys, int era, int year, int month, int day);
     Date(CalendarSystem cal_sys, const std::string& date_str,
             const char* format = "%y-%m-%d");
 
@@ -49,13 +48,13 @@ class Date {
 
  private:
     void convert_form_serial_date(CalendarSystem cal_sys,
-            std::string& era, int& year, int& month, int& day) const;
+            int& era, int& year, int& month, int& day) const;
     void convert_from_serial_date(CalendarSystem cal_sys,
             std::string& date_str, const char* format) const;
     void convert_from_serial_date(CalendarSystem cal_sys,
             int& day_of_week) const;
     int convert_to_serial_date(CalendarSystem cal_sys,
-            const std::string& era, int year, int month, int day) const;
+            int era, int year, int month, int day) const;
     int convert_to_serial_date(CalendarSystem cal_sys,
             const std::string& date_str, const char* format) const;
     ICalendarSystem& get_calendar_system(CalendarSystem cal_sys) const;

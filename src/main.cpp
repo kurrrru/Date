@@ -6,7 +6,7 @@
 #include <sstream>
 
 int main() {
-    toolbox::Date date1(toolbox::GREGORIAN, "", 1, 1, 1);
+    toolbox::Date date1(toolbox::GREGORIAN, toolbox::GregorianCalendar::AD, 1, 1, 1);
     std::stringstream ss;
     ss << "Date1: " << date1.get_year(toolbox::GREGORIAN) << "-"
         << date1.get_month(toolbox::GREGORIAN) << "-"
@@ -22,14 +22,9 @@ int main() {
     std::cout << "day of week (0=Sun,...,6=Sat): " << date1.get_weekday(toolbox::GREGORIAN) << std::endl;
 
     toolbox::GregorianCalendar gc;
-    std::string era;
-    int year, month, day;
+    int era, year, month, day;
     gc.from_serial_date(0, era, year, month, day);
     std::cout << "1970-01-01 in Gregorian Calendar: " << year << "-" << month << "-" << day << std::endl;
 
-    
-
     return 0;
-
-
 }
