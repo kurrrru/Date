@@ -2,10 +2,13 @@
 
 #include <iostream>
 
+#include <string.hpp>
+
 namespace {
 
 bool is_leap(int year);
 int last_day_of_month(int year, int month);
+std::string era_to_string(int era);
 
 }  // namespace
 
@@ -28,7 +31,17 @@ GregorianCalendar::~GregorianCalendar() {
 
 int GregorianCalendar::to_serial_date(int era,
         int year, int month, int day) const {
-    (void)era;
+    if (era < 0 || era >= END_OF_ERA) {
+        throw std::out_of_range("Invalid era: " + toolbox::to_string(era));
+    }
+    if (year < 0) {
+        throw std::out_of_range("year must be positive");
+    } else if (year == 0) {
+        throw std::out_of_range("year 0 does not exist in Gregorian calendar");
+    }
+    if (era == BC) {
+        year = 1 - year;
+    }
     if (month < 1 || month > 12) {
         throw std::out_of_range("month must be 1-12");
     }
@@ -43,7 +56,6 @@ int GregorianCalendar::to_serial_date(int era,
     std::cout << "Debug: year=" << year << ", month=" << month << ", day=" << day << std::endl;
     std::cout << "Debug: era_year=" << era_year << ", yoe=" << yoe
             << ", doy=" << doy << ", doe=" << doe << std::endl;
-
     return era_year * 146097 + static_cast<int>(doe) - 719468;
 }
 
@@ -69,6 +81,10 @@ void GregorianCalendar::from_serial_date(int serial_date,
     day = doy - (153 * mp + 2) / 5 + 1;
     month = mp < 10 ? mp + 3 : mp - 9;
     year += !!(month <= 2);
+    era = year <= 0 ? BC : AD;
+    if (year <= 0) {
+        year = 1 - year;
+    }
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,
@@ -101,6 +117,17 @@ int last_day_of_month(int year, int month) {
         return 29;
     }
     return last_day[month - 1];
+}
+
+std::string era_to_string(int era) {
+    static const char* era_str[] = {
+        [toolbox::GregorianCalendar::BC] = "BC",
+        [toolbox::GregorianCalendar::AD] = "AD",
+    };
+    if (era < 0 || era >= toolbox::GregorianCalendar::END_OF_ERA) {
+        throw std::out_of_range("Invalid era");
+    }
+    return std::string(era_str[era]);
 }
 
 }  // namespace
