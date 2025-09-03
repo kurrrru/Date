@@ -74,9 +74,12 @@ int GregorianCalendar::to_serial_date(int era,
 
 int GregorianCalendar::to_serial_date(const std::string& date_str,
         const char* format) const {
+    if (!format) {
+        throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
+            "format is null");
+    }
     // later
     (void)date_str;
-    (void)format;
     return 0;
 }
 
@@ -102,12 +105,15 @@ void GregorianCalendar::from_serial_date(int serial_date,
 
 void GregorianCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
+    if (!format) {
+        throw std::invalid_argument("GregorianCalendar::from_serial_date failed:"
+            "format is null");
+    }
     int era, year, month, day;
     from_serial_date(serial_date, era, year, month, day);
     int day_of_week;
     from_serial_date(serial_date, day_of_week);
     std::ostringstream ss;
-    // very simple implementation
     for (std::size_t i = 0; format[i]; ++i) {
         if (format[i] == '%') {
             switch (format[++i]) {
@@ -155,7 +161,7 @@ void GregorianCalendar::from_serial_date(int serial_date,
 
 namespace {
 bool is_leap(int year) {
-    // return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
+    // use (year & 0x3) instead of (year % 4) for performance
     return !(year & 0x3) && (year % 100 != 0 || year % 400 == 0);
 }
 
