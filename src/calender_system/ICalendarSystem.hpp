@@ -9,15 +9,15 @@ class ICalendarSystem {
     virtual ~ICalendarSystem() {}
 
     virtual int to_serial_date(int era,
-            int year, int month, int day) const = 0;
+        int year, int month, int day) const = 0;
     virtual int to_serial_date(const std::string& date_str,
-            const char* format) const = 0;
+        const char* format) const = 0;
     virtual void from_serial_date(int serial_date,
-            int& era, int& year, int& month, int& day) const = 0;
+        int& era, int& year, int& month, int& day) const = 0;
     virtual void from_serial_date(int serial_date,
-            std::string& date_str, const char* format) const = 0;
+        std::string& date_str, const char* format) const = 0;
     virtual void from_serial_date(int serial_date,
-            int& day_of_week) const = 0;  // 0=Sun, 1=Mon, ..., 6=Sat
+        int& day_of_week) const = 0;  // 0=Sun, 1=Mon, ..., 6=Sat
 };
 
 }  // namespace toolbox
