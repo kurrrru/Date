@@ -73,13 +73,14 @@ int GregorianCalendar::to_serial_date(int era,
 }
 
 int GregorianCalendar::to_serial_date(const std::string& date_str,
-        const char* format) const {
+        const char* format, bool strict) const {
     if (!format) {
         throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
             "format is null");
     }
     // later
     (void)date_str;
+    (void)strict;
     return 0;
 }
 
@@ -177,12 +178,12 @@ int last_day_of_month(int year, int month) {
 
 std::string to_string_Ee(int era, bool uppercase) {
     static const char* era_str_E[] = {
-        [toolbox::GregorianCalendar::BC] = "B.C.",
-        [toolbox::GregorianCalendar::AD] = "A.D.",
+        /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
+        /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
     };
     static const char* era_str_e[] = {
-        [toolbox::GregorianCalendar::BC] = "BC",
-        [toolbox::GregorianCalendar::AD] = "AD",
+        /* [toolbox::GregorianCalendar::BC] = */ "BC",
+        /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };
     if (era < 0 || era >= toolbox::GregorianCalendar::END_OF_ERA) {
         throw std::out_of_range("era_to_string: Invalid era: " + toolbox::to_string(era));

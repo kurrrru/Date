@@ -26,11 +26,11 @@ toolbox::Date::Date(toolbox::CalendarSystem cal_sys, int era,
 }
 
 toolbox::Date::Date(toolbox::CalendarSystem cal_sys, const std::string& date_str,
-        const char* format) {
+        const char* format, bool strict) {
     if (!format) {
         throw std::invalid_argument("Date::Date failed: format is null");
     }
-    _serial_date = convert_to_serial_date(cal_sys, date_str, format);
+    _serial_date = convert_to_serial_date(cal_sys, date_str, format, strict);
 }
 
 std::string toolbox::Date::to_string(CalendarSystem cal_sys,
@@ -167,12 +167,12 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
 }
 
 int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
-        const std::string& date_str, const char* format) const {
+        const std::string& date_str, const char* format, bool strict) const {
     if (!format) {
         throw std::invalid_argument("Date::convert_to_serial_date failed: format is null");
     }
     ICalendarSystem& calendar_system = get_calendar_system(cal_sys);
-    return calendar_system.to_serial_date(date_str, format);
+    return calendar_system.to_serial_date(date_str, format, strict);
 }
 
 // When adding a new calendar system, add it here.

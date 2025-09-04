@@ -14,7 +14,8 @@ class FrenchRevolutionaryCalendar : public ICalendarSystem {
     ~FrenchRevolutionaryCalendar();
 
     int to_serial_date(int era, int year, int month, int day) const;
-    int to_serial_date(const std::string& date_str, const char* format) const;
+    int to_serial_date(const std::string& date_str,
+        const char* format, bool strict) const;
     void from_serial_date(int serial_date,
         int& era, int& year, int& month, int& day) const;
     void from_serial_date(int serial_date,
