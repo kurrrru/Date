@@ -30,7 +30,7 @@ class GregorianCalendar : public ICalendarSystem {
     };
 
  private:
-    void parse_formated_date(const std::string& date_str,
+    void parse_formatted_date(const std::string& date_str,
         std::size_t pos,
         const char* format,
         int& era, bool era_found, 
