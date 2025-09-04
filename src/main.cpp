@@ -28,7 +28,7 @@ int main() {
     std::cout << "1970-01-01 in Gregorian Calendar: " << year << "-" << month << "-" << day << std::endl;
 
     try {
-        toolbox::Date date2(toolbox::GREGORIAN, "2025009-02", "%Y0%M-%D");
+        toolbox::Date date2(toolbox::GREGORIAN, "2025-1111", "%Y-%m1%D", false);
         std::cout << "Date2: " << date2.to_string(toolbox::GREGORIAN, "%Y-%M-%D") << std::endl;
     } catch (std::exception &e) {
         std::cerr << "Error creating date2: " << e.what() << std::endl;

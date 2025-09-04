@@ -184,19 +184,31 @@ void GregorianCalendar::parse_formated_date(const std::string& date_str,
     bool& all_found,
     int& serial,
     bool strict) const {
-    // strictモードの場合、date_strの曖昧さを許さず、バックトラックによってこれを解析する
-    // non-strictモードの場合、date_strを左から順に解析していき、greedyにマッチさせる
     if (pos >= date_str.size() && !*format) {
-        if (strict && all_found && year_found && month_found && day_found) {
-            throw std::invalid_argument("parse_formated_date failed: date_str is ambiguous");
-        }
-        all_found = year_found && month_found && day_found;
-        if (all_found) {
+        // if (strict && all_found && year_found && month_found && day_found) {
+        //     throw std::invalid_argument("parse_formated_date failed: date_str is ambiguous");
+        // }
+        // all_found = year_found && month_found && day_found;
+        // if (all_found) {
+        //     try {
+        //         serial = toolbox::GregorianCalendar::to_serial_date(era, year, month, day);
+        //     } catch (std::exception &e){
+        //         all_found = false;
+        //     }
+        // }
+        if (year_found && month_found && day_found) {
             try {
-                serial = toolbox::GregorianCalendar::to_serial_date(era, year, month, day);
+                int ret = to_serial_date(era, year, month, day);
+                if (!all_found) {
+                    serial = ret;
+                }
             } catch (std::exception &e){
-                all_found = false;
+                return;
             }
+            if (all_found) {
+                throw std::invalid_argument("parse_formated_date failed: date_str is ambiguous");
+            }
+            all_found = true;
         }
         return;
     }
