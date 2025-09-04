@@ -27,5 +27,11 @@ int main() {
     gc.from_serial_date(0, era, year, month, day);
     std::cout << "1970-01-01 in Gregorian Calendar: " << year << "-" << month << "-" << day << std::endl;
 
+    try {
+        toolbox::Date date2(toolbox::GREGORIAN, "2025009-02", "%Y0%M-%D");
+        std::cout << "Date2: " << date2.to_string(toolbox::GREGORIAN, "%Y-%M-%D") << std::endl;
+    } catch (std::exception &e) {
+        std::cerr << "Error creating date2: " << e.what() << std::endl;
+    }
     return 0;
 }

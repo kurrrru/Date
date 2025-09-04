@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <stdexcept>
+#include <cstring>
 
 #include <string.hpp>
 
@@ -79,9 +81,23 @@ int GregorianCalendar::to_serial_date(const std::string& date_str,
             "format is null");
     }
     // later
-    (void)date_str;
-    (void)strict;
-    return 0;
+    int era = toolbox::GregorianCalendar::AD;
+    int year = 0, month = 0, day = 0;
+    bool all_found = false;
+    int serial = 0;
+    parse_formated_date(date_str, 0, format,
+        era, false,
+        year, false,
+        month, false,
+        day, false,
+        all_found,
+        serial,
+        strict);
+    if (!all_found) {
+        throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
+            "Something went wrong while parsing date_str");
+    }
+    return serial;
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,
@@ -156,6 +172,348 @@ void GregorianCalendar::from_serial_date(int serial_date,
         int& day_of_week) const {
     day_of_week = serial_date >= -4 ?
             (serial_date + 4) % 7 : (serial_date + 5) % 7 + 6;
+}
+
+void GregorianCalendar::parse_formated_date(const std::string& date_str,
+    std::size_t pos,
+    const char* format,
+    int& era, bool era_found, 
+    int& year, bool year_found,
+    int& month, bool month_found,
+    int& day, bool day_found,
+    bool& all_found,
+    int& serial,
+    bool strict) const {
+    // strictモードの場合、date_strの曖昧さを許さず、バックトラックによってこれを解析する
+    // non-strictモードの場合、date_strを左から順に解析していき、greedyにマッチさせる
+    if (pos >= date_str.size() && !*format) {
+        if (strict && all_found && year_found && month_found && day_found) {
+            throw std::invalid_argument("parse_formated_date failed: date_str is ambiguous");
+        }
+        all_found = year_found && month_found && day_found;
+        if (all_found) {
+            try {
+                serial = toolbox::GregorianCalendar::to_serial_date(era, year, month, day);
+            } catch (std::exception &e){
+                all_found = false;
+            }
+        }
+        return;
+    }
+    if (pos >= date_str.size() || !*format) {
+        return;
+    }
+    if (date_str[pos] == format[0]) {
+        parse_formated_date(date_str, pos + 1, format + 1,
+            era, era_found,
+            year, year_found,
+            month, month_found,
+            day, day_found,
+            all_found,
+            serial,
+            strict);
+        return;
+    }
+    if (format[0] != '%') {
+        return;
+    }
+    switch (format[1]) {
+        case 'E':
+        case 'e': {
+            if (era_found) {
+                throw std::invalid_argument("parse_formated_date failed: era is specified multiple times");
+            }
+            parse_Ee(date_str, pos, format,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+        case 'Y':
+        case 'y': {
+            if (year_found) {
+                throw std::invalid_argument("parse_formated_date failed: year is specified multiple times");
+            }
+            parse_Yy(date_str, pos, format,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+        case 'M':
+        case 'm': {
+            if (month_found) {
+                throw std::invalid_argument("parse_formated_date failed: month is specified multiple times");
+            }
+            parse_Mm(date_str, pos, format,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+        case 'D':
+        case 'd': {
+            if (day_found) {
+                throw std::invalid_argument("parse_formated_date failed: day is specified multiple times");
+            }
+            parse_Dd(date_str, pos, format,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+        case '%': {
+            if (date_str[pos] != '%') {
+                return;
+            }
+            parse_formated_date(date_str, pos + 1, format + 2,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+        default:
+            throw std::invalid_argument("parse_formated_date failed: "
+                "Invalid format specifier: %" + toolbox::to_string(format[1]));
+    }
+
+}
+
+void GregorianCalendar::parse_Ee(const std::string& date_str,
+    std::size_t pos,
+    const char* format,
+    int& era, bool era_found, 
+    int& year, bool year_found,
+    int& month, bool month_found,
+    int& day, bool day_found,
+    bool& all_found,
+    int& serial,
+    bool strict
+) const {
+    (void)era_found;
+    static const char* era_str_E[] = {
+        /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
+        /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
+    };
+    static const char* era_str_e[] = {
+        /* [toolbox::GregorianCalendar::BC] = */ "BC",
+        /* [toolbox::GregorianCalendar::AD] = */ "AD",
+    };
+    for (int i = 0; i < toolbox::GregorianCalendar::END_OF_ERA; ++i) {
+        const char* s = std::isupper(format[1]) ? era_str_E[i] : era_str_e[i];
+        const std::size_t len = std::strlen(s);
+        if (date_str.compare(pos, len, s) == 0) {
+            era = i;
+            parse_formated_date(date_str, pos + len, format + 2,
+                era, true,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
+    }
+    throw std::invalid_argument("parse_Ee failed: era not found in date_str at position "
+        + toolbox::to_string(pos));
+}
+
+void GregorianCalendar::parse_Yy(const std::string& date_str,
+    std::size_t pos,
+    const char* format,
+    int& era, bool era_found, 
+    int& year, bool year_found,
+    int& month, bool month_found,
+    int& day, bool day_found,
+    bool& all_found,
+    int& serial,
+    bool strict
+) const {
+    (void)year_found;
+    if (std::isupper(format[1])) {
+        // %Y
+        for (std::size_t num_len = 1; pos + num_len <= date_str.size(); ++num_len) {
+            if (!std::isdigit(date_str[pos + num_len - 1])) {
+                break;
+            }
+            std::string year_str = date_str.substr(pos, num_len);
+            try {
+                year = toolbox::stoi(year_str);
+            } catch (std::exception &e) {
+                continue;
+            }
+            parse_formated_date(date_str, pos + num_len, format + 2,
+                era, era_found,
+                year, true,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            if (all_found && !strict) {
+                return;
+            }
+        }
+    } else {
+        // %y
+        if (pos + 2 > date_str.size()) {
+            return;
+        }
+        std::string year_str = date_str.substr(pos, 2);
+        try {
+            year = toolbox::stoi(year_str);
+        } catch (std::exception &e) {
+            return;
+        }
+        parse_formated_date(date_str, pos + 2, format + 2,
+            era, era_found,
+            year, true,
+            month, month_found,
+            day, day_found,
+            all_found,
+            serial,
+            strict);
+        return;
+    }
+}
+
+void GregorianCalendar::parse_Mm(const std::string& date_str,
+    std::size_t pos,
+    const char* format,
+    int& era, bool era_found, 
+    int& year, bool year_found, 
+    int& month, bool month_found,
+    int& day, bool day_found,
+    bool& all_found,
+    int& serial,
+    bool strict
+) const {
+    (void)month_found;
+    if (std::isupper(format[1])) {
+        // %M
+        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+            if (!std::isdigit(date_str[pos + num_len - 1])) {
+                break;
+            }
+            std::string month_str = date_str.substr(pos, num_len);
+            try {
+                month = toolbox::stoi(month_str);
+            } catch (std::exception &e) {
+                continue;
+            }
+            parse_formated_date(date_str, pos + num_len, format + 2,
+                era, era_found,
+                year, year_found,
+                month, true,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            if (all_found && !strict) {
+                return;
+            }
+        }
+    } else {
+        // %m
+        if (pos + 2 > date_str.size()) {
+            return;
+        }
+        std::string month_str = date_str.substr(pos, 2);
+        try {
+            month = toolbox::stoi(month_str);
+        } catch (std::exception &e) {
+            return;
+        }
+        parse_formated_date(date_str, pos + 2, format + 2,
+            era, era_found,
+            year, year_found,
+            month, true,
+            day, day_found,
+            all_found,
+            serial,
+            strict);
+        return;
+    }
+}
+
+void GregorianCalendar::parse_Dd(const std::string& date_str,
+    std::size_t pos,
+    const char* format,
+    int& era, bool era_found, 
+    int& year, bool year_found,
+    int& month, bool month_found,
+    int& day, bool day_found,
+    bool& all_found,
+    int& serial,
+    bool strict
+) const {
+    (void)day_found;
+    if (std::isupper(format[1])) {
+        // %D
+        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+            if (!std::isdigit(date_str[pos + num_len - 1])) {
+                break;
+            }
+            std::string day_str = date_str.substr(pos, num_len);
+            try {
+                day = toolbox::stoi(day_str);
+            } catch (std::exception &e) {
+                continue;
+            }
+            parse_formated_date(date_str, pos + num_len, format + 2,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, true,
+                all_found,
+                serial,
+                strict);
+            if (all_found && !strict) {
+                return;
+            }
+        }
+    } else {
+        // %d
+        if (pos + 2 > date_str.size()) {
+            return;
+        }
+        std::string day_str = date_str.substr(pos, 2);
+        try {
+            day = toolbox::stoi(day_str);
+        } catch (std::exception &e) {
+            return;
+        }
+        parse_formated_date(date_str, pos + 2, format + 2,
+            era, era_found,
+            year, year_found,
+            month, month_found,
+            day, true,
+            all_found,
+            serial,
+            strict);
+        return;
+    }
 }
 
 }  // namespace toolbox

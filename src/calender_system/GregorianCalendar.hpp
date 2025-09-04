@@ -28,6 +28,63 @@ class GregorianCalendar : public ICalendarSystem {
         AD,
         END_OF_ERA
     };
+
+ private:
+    void parse_formated_date(const std::string& date_str,
+        std::size_t pos,
+        const char* format,
+        int& era, bool era_found, 
+        int& year, bool year_found,
+        int& month, bool month_found,
+        int& day, bool day_found,
+        bool& all_found,
+        int& serial,
+        bool strict
+    ) const;
+    void parse_Ee(const std::string& date_str,
+        std::size_t pos,
+        const char* format,
+        int& era, bool era_found, 
+        int& year, bool year_found,
+        int& month, bool month_found,
+        int& day, bool day_found,
+        bool& all_found,
+        int& serial,
+        bool strict
+    ) const;
+    void parse_Yy(const std::string& date_str,
+        std::size_t pos,
+        const char* format,
+        int& era, bool era_found, 
+        int& year, bool year_found,
+        int& month, bool month_found,
+        int& day, bool day_found,
+        bool& all_found,
+        int& serial,
+        bool strict
+    ) const;
+    void parse_Mm(const std::string& date_str,
+        std::size_t pos,
+        const char* format,
+        int& era, bool era_found, 
+        int& year, bool year_found, 
+        int& month, bool month_found,
+        int& day, bool day_found,
+        bool& all_found,
+        int& serial,
+        bool strict
+    ) const;
+    void parse_Dd(const std::string& date_str,
+        std::size_t pos,
+        const char* format,
+        int& era, bool era_found, 
+        int& year, bool year_found,
+        int& month, bool month_found,
+        int& day, bool day_found,
+        bool& all_found,
+        int& serial,
+        bool strict
+    ) const;
 };
 
 }  // namespace toolbox
