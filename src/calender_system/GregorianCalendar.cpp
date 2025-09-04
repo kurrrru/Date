@@ -77,7 +77,6 @@ int GregorianCalendar::to_serial_date(const std::string& date_str,
         throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
             "format is null");
     }
-    // later
     int era = toolbox::GregorianCalendar::AD;
     int year = 0, month = 0, day = 0;
     bool all_found = false;
