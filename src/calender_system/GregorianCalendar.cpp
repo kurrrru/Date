@@ -68,9 +68,6 @@ int GregorianCalendar::to_serial_date(int era,
     const unsigned int yoe = static_cast<unsigned int>(year - era_year * 400);
     const unsigned int doy = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1;
     const unsigned int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    std::cout << "Debug: year=" << year << ", month=" << month << ", day=" << day << std::endl;
-    std::cout << "Debug: era_year=" << era_year << ", yoe=" << yoe
-            << ", doy=" << doy << ", doe=" << doe << std::endl;
     return era_year * 146097 + static_cast<int>(doe) - 719468;
 }
 
@@ -365,6 +362,9 @@ void GregorianCalendar::parse_Yy(const std::string& date_str,
     (void)year_found;
     if (std::isupper(format[1])) {
         // %Y
+        if (date_str[pos] == '0') {
+            return;
+        }
         for (std::size_t num_len = 1; pos + num_len <= date_str.size(); ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
@@ -424,6 +424,9 @@ void GregorianCalendar::parse_Mm(const std::string& date_str,
     (void)month_found;
     if (std::isupper(format[1])) {
         // %M
+        if (date_str[pos] == '0') {
+            return;
+        }
         for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
@@ -483,6 +486,9 @@ void GregorianCalendar::parse_Dd(const std::string& date_str,
     (void)day_found;
     if (std::isupper(format[1])) {
         // %D
+        if (date_str[pos] == '0') {
+            return;
+        }
         for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;

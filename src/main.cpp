@@ -5,33 +5,26 @@
 #include <string>
 #include <sstream>
 
-int main() {
-    toolbox::Date date1(toolbox::GREGORIAN, toolbox::GregorianCalendar::AD, 2025, 9, 2);
-    std::stringstream ss;
-    ss << "Date1: " << date1.get_year(toolbox::GREGORIAN) << "-"
-        << date1.get_month(toolbox::GREGORIAN) << "-"
-        << date1.get_day(toolbox::GREGORIAN) << std::endl;
-    std::cout << ss.str();
-    std::cout << "Raw date (days since 1970-01-01): " << date1.get_raw_date() << std::endl;
-    std::cout << "day of week (0=Sun,...,6=Sat): " << date1.get_weekday(toolbox::GREGORIAN) << std::endl;
-    date1--;
-    std::cout << "After decrement: " << date1.get_year(toolbox::GREGORIAN) << "-"
-        << date1.get_month(toolbox::GREGORIAN) << "-"
-        << date1.get_day(toolbox::GREGORIAN) << std::endl;
-    std::cout << "Raw date (days since 1970-01-01): " << date1.get_raw_date() << std::endl;
-    std::cout << "day of week (0=Sun,...,6=Sat): " << date1.get_weekday(toolbox::GREGORIAN) << std::endl;
-    std::cout << "Formatted date: " << date1.to_string(toolbox::GREGORIAN, "%Y(%E)-%M-%D (%W), %y(%e)-%m-%d (%w)") << std::endl;
-
-    toolbox::GregorianCalendar gc;
-    int era, year, month, day;
-    gc.from_serial_date(0, era, year, month, day);
-    std::cout << "1970-01-01 in Gregorian Calendar: " << year << "-" << month << "-" << day << std::endl;
-
+void test_parse(const std::string& date_str, const char* format, bool strict, bool expect_success) {
     try {
-        toolbox::Date date2(toolbox::GREGORIAN, "2025-1111", "%Y-%m1%D", false);
-        std::cout << "Date2: " << date2.to_string(toolbox::GREGORIAN, "%Y-%M-%D") << std::endl;
-    } catch (std::exception &e) {
-        std::cerr << "Error creating date2: " << e.what() << std::endl;
+        toolbox::Date date(toolbox::GREGORIAN, date_str, format, strict);
+        if (expect_success) {
+            std::cout << "OK" << std::endl;
+        } else {
+            std::cout << "NG" << std::endl;
+        }
+    } catch (const std::exception& e) {
+        if (!expect_success) {
+            std::cout << "OK" << std::endl;
+            return;
+        }
+        std::cout << "Error: " << e.what() << std::endl;
+        std::cout << "NG" << std::endl;
     }
-    return 0;
+}
+
+int main() {
+    toolbox::Date date;
+    test_parse("2024-02-09", "%Y-%m-%d", true, true);
+    test_parse("2024/2/9", "%Y/%M/%D", true, true);
 }
