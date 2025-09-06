@@ -4,6 +4,7 @@ namespace toolbox {
 
 enum CalendarSystem {
     GREGORIAN,
+    NON_PROLEPTIC_GREGORIAN,
     JULIAN,
     JAPANESE_WAREKI,
     FRENCH_REVOLUTIONARY

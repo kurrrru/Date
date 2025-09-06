@@ -1,3 +1,4 @@
+// 1582-10-4の次の日が1582-10-15
 #pragma once
 
 #include <string>
@@ -6,13 +7,12 @@
 
 namespace toolbox {
 
-// Proleptic Gregorian calendar
-class GregorianCalendar : public ICalendarSystem {
+class NonProlepticGregorianCalendar : public ICalendarSystem {
  public:
-    GregorianCalendar();
-    GregorianCalendar(const GregorianCalendar& other);
-    GregorianCalendar& operator=(const GregorianCalendar& other);
-    ~GregorianCalendar();
+    NonProlepticGregorianCalendar();
+    NonProlepticGregorianCalendar(const NonProlepticGregorianCalendar& other);
+    NonProlepticGregorianCalendar& operator=(const NonProlepticGregorianCalendar& other);
+    ~NonProlepticGregorianCalendar();
 
     int to_serial_date(int era, int year, int month, int day) const;
     int to_serial_date(const std::string& date_str,
@@ -31,6 +31,7 @@ class GregorianCalendar : public ICalendarSystem {
     };
 
  private:
+    void validate_serial_date(int serial_date) const;
     void parse_formatted_date(const std::string& date_str,
         std::size_t pos,
         const char* format,
@@ -88,4 +89,4 @@ class GregorianCalendar : public ICalendarSystem {
     ) const;
 };
 
-}  // namespace toolbox
+}

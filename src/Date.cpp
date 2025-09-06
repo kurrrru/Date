@@ -1,6 +1,7 @@
 #include <Date.hpp>
 
 #include <calender_system/GregorianCalendar.hpp>
+#include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
 #include <calender_system/JapaneseWarekiCalendar.hpp>
 #include <calender_system/FrenchRevolutionaryCalendar.hpp>
@@ -178,6 +179,7 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
 // When adding a new calendar system, add it here.
 toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSystem cal_sys) const {
     static GregorianCalendar gregorian_calendar;
+    static NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
     // static JulianCalendar julian_calendar;
     // static JapaneseWarekiCalendar japanese_wareki_calendar;
     // static FrenchRevolutionaryCalendar french_revolutionary_calendar;
@@ -185,6 +187,8 @@ toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSy
     switch (cal_sys) {
         case toolbox::GREGORIAN:
             return gregorian_calendar;
+        case toolbox::NON_PROLEPTIC_GREGORIAN:
+            return non_proleptic_gregorian_calendar;
         // case toolbox::JULIAN:
         //     return julian_calendar;
         // case toolbox::JAPANESE_WAREKI:

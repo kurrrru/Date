@@ -46,4 +46,7 @@ int main() {
     test_parse("10101", "%Y%M%D", true, true);
     test_parse("010101", "%Y%M%D", true, false);
 
+    date = toolbox::Date(toolbox::GREGORIAN, "1582-10-15", "%Y-%M-%D");
+    std::cout << date.get_raw_date() << std::endl;
+
 }
