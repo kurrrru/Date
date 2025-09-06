@@ -5,13 +5,13 @@
 
 namespace toolbox {
 
-std::string to_string(int value) {
+inline std::string to_string(int value) {
     std::ostringstream oss;
     oss << value;
     return oss.str();
 }
 
-int stoi(const std::string &s) {
+inline int stoi(const std::string &s) {
     std::stringstream ss(s);
     int num;
     ss >> num;
