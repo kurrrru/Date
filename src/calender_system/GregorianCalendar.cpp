@@ -41,25 +41,25 @@ GregorianCalendar::~GregorianCalendar() {
 int GregorianCalendar::to_serial_date(int era,
         int year, int month, int day) const {
     if (era < 0 || era >= END_OF_ERA) {
-        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed: "
             "Invalid era: " + toolbox::to_string(era));
     }
     if (year < 0) {
-        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed: "
             "year must be positive");
     } else if (year == 0) {
-        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed: "
             "year 0 does not exist in Gregorian calendar");
     }
     if (era == BC) {
         year = 1 - year;
     }
     if (month < 1 || month > 12) {
-        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed: "
             "month must be in 1..12");
     }
     if (day < 1 || day > last_day_of_month(year, month)) {
-        throw std::out_of_range("GregorianCalendar::to_serial_date failed:"
+        throw std::out_of_range("GregorianCalendar::to_serial_date failed: "
             "day is out of range for month " + toolbox::to_string(month)
             + " of year " + toolbox::to_string(year));
     }
@@ -74,7 +74,7 @@ int GregorianCalendar::to_serial_date(int era,
 int GregorianCalendar::to_serial_date(const std::string& date_str,
         const char* format, bool strict) const {
     if (!format) {
-        throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
+        throw std::invalid_argument("GregorianCalendar::to_serial_date failed: "
             "format is null");
     }
     int era = toolbox::GregorianCalendar::AD;
@@ -90,7 +90,7 @@ int GregorianCalendar::to_serial_date(const std::string& date_str,
         serial,
         strict);
     if (!all_found) {
-        throw std::invalid_argument("GregorianCalendar::to_serial_date failed:"
+        throw std::invalid_argument("GregorianCalendar::to_serial_date failed: "
             "Something went wrong while parsing date_str");
     }
     return serial;
@@ -119,7 +119,7 @@ void GregorianCalendar::from_serial_date(int serial_date,
 void GregorianCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
     if (!format) {
-        throw std::invalid_argument("GregorianCalendar::from_serial_date failed:"
+        throw std::invalid_argument("GregorianCalendar::from_serial_date failed: "
             "format is null");
     }
     int era, year, month, day;
@@ -154,7 +154,7 @@ void GregorianCalendar::from_serial_date(int serial_date,
                     ss << '%';
                     break;
                 default:
-                    throw std::invalid_argument("GregorianCalendar::from_serial_date failed:"
+                    throw std::invalid_argument("GregorianCalendar::from_serial_date failed: "
                         "Invalid format specifier: %" + toolbox::to_string(format[i]));
             }
         } else {
