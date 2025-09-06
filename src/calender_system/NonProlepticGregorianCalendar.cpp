@@ -82,7 +82,7 @@ void NonProlepticGregorianCalendar::from_serial_date(int serial_date,
 }
 
 void NonProlepticGregorianCalendar::validate_serial_date(int serial_date) const {
-    // 1582-10-15 in Gregorian calendar
+    // -141427 is 1582-10-15 in Gregorian calendar
     static const int begin_gregorian = -141427;
     if (serial_date < begin_gregorian) {
         throw std::out_of_range("NonProlepticGregorianCalendar::validate_serial_date failed: "
