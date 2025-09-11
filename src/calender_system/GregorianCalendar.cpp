@@ -308,11 +308,11 @@ void GregorianCalendar::parse_Ee(const std::string& date_str,
     bool strict
 ) const {
     (void)era_found;
-    static const char* era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
         /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
     };
-    static const char* era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "BC",
         /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };
@@ -530,7 +530,7 @@ bool is_leap(int year) {
 }
 
 int last_day_of_month(int year, int month) {
-    static const int last_day[12] = {
+    const int last_day[12] = {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
     };
     if (month == 2 && is_leap(year)) {
@@ -540,11 +540,11 @@ int last_day_of_month(int year, int month) {
 }
 
 std::string to_string_Ee(int era, bool uppercase) {
-    static const char* era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
         /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
     };
-    static const char* era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "BC",
         /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };
@@ -596,11 +596,11 @@ std::string to_string_Dd(int day, bool uppercase) {
 }
 
 std::string to_string_Ww(int day_of_week, bool uppercase) {
-    static const char* day_of_week_str_W[] = {
+    const char* day_of_week_str_W[] = {
         "Sunday", "Monday", "Tuesday", "Wednesday",
         "Thursday", "Friday", "Saturday"
     };
-    static const char* day_of_week_str_w[] = {
+    const char* day_of_week_str_w[] = {
         "Sun.", "Mon.", "Tue.", "Wed.",
         "Thu.", "Fri.", "Sat."
     };

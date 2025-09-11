@@ -83,7 +83,7 @@ void NonProlepticGregorianCalendar::from_serial_date(int serial_date,
 
 void NonProlepticGregorianCalendar::validate_serial_date(int serial_date) const {
     // -141427 is 1582-10-15 in Gregorian calendar
-    static const int begin_gregorian = -141427;
+    const int begin_gregorian = -141427;
     if (serial_date < begin_gregorian) {
         throw std::out_of_range("NonProlepticGregorianCalendar::validate_serial_date failed: "
             "Dates before 1582-10-15 does not exist in non-proleptic Gregorian calendar");
@@ -227,11 +227,11 @@ void NonProlepticGregorianCalendar::parse_Ee(const std::string& date_str,
     bool strict
 ) const {
     (void)era_found;
-    static const char* era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
         /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
     };
-    static const char* era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "BC",
         /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };

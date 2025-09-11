@@ -42,8 +42,8 @@ JulianCalendar::~JulianCalendar() {
 }
 
 int JulianCalendar::to_serial_date(int era, int year, int month, int day) const {
-    static const int julian_bc45_1_1_serial = -735601;
-    static const int days_before_month[] = {
+    const int julian_bc45_1_1_serial = -735601;
+    const int days_before_month[] = {
         0,   // dummy
         0,   // January
         31,  // February
@@ -116,9 +116,9 @@ int JulianCalendar::to_serial_date(const std::string& date_str, const char* form
 }
 
 void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int& month, int& day) const {
-    static const int julian_bc45_3_1_serial = to_serial_date(GregorianCalendar::BC, 45, 3, 1);
-    static const int julian_bc7_3_1_serial = to_serial_date(GregorianCalendar::BC, 7, 3, 1);
-    static const int julian_ad4_3_1_serial = to_serial_date(GregorianCalendar::AD, 4, 3, 1);
+    const int julian_bc45_3_1_serial = to_serial_date(GregorianCalendar::BC, 45, 3, 1);
+    const int julian_bc7_3_1_serial = to_serial_date(GregorianCalendar::BC, 7, 3, 1);
+    const int julian_ad4_3_1_serial = to_serial_date(GregorianCalendar::AD, 4, 3, 1);
     if (serial_date < julian_bc45_3_1_serial || serial_date > julian_ad4_3_1_serial) {
         int z = serial_date - julian_bc45_3_1_serial + 1;
         const int era_year = (z >= 0 ? z : z - 1460) / 1461;
@@ -351,11 +351,11 @@ void JulianCalendar::parse_Ee(const std::string& date_str,
     bool strict
 ) const {
     (void)era_found;
-    static const char* era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "B.C.",
         /* [toolbox::GregorianCalendar::AD] = */ "A.D.",
     };
-    static const char* era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::GregorianCalendar::BC] = */ "BC",
         /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };
@@ -570,7 +570,7 @@ bool is_leap(int year) {
 }
 
 int last_day_of_month(int year, int month) {
-    static const int last_day[12] = {
+    const int last_day[12] = {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
     };
     if (month == 2 && is_leap(year)) {
@@ -580,11 +580,11 @@ int last_day_of_month(int year, int month) {
 }
 
 std::string to_string_Ee(int era, bool uppercase) {
-    static const char* era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::JulianCalendar::BC] = */ "B.C.",
         /* [toolbox::JulianCalendar::AD] = */ "A.D.",
     };
-    static const char* era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::JulianCalendar::BC] = */ "BC",
         /* [toolbox::JulianCalendar::AD] = */ "AD",
     };
@@ -634,11 +634,11 @@ std::string to_string_Dd(int day, bool uppercase) {
 }
 
 std::string to_string_Ww(int day_of_week, bool uppercase) {
-    static const char* day_of_week_str_W[] = {
+    const char* day_of_week_str_W[] = {
         "Sunday", "Monday", "Tuesday", "Wednesday",
         "Thursday", "Friday", "Saturday"
     };
-    static const char* day_of_week_str_w[] = {
+    const char* day_of_week_str_w[] = {
         "Sun.", "Mon.", "Tue.", "Wed.",
         "Thu.", "Fri.", "Sat."
     };
