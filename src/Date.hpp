@@ -14,6 +14,8 @@ class Date {
     Date& operator=(const Date& other);
     ~Date();
 
+    static Date today();
+
     explicit Date(int serial_date);
     Date(CalendarSystem cal_sys, int era, int year, int month, int day);
     Date(CalendarSystem cal_sys, const std::string& date_str,

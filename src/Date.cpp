@@ -1,10 +1,22 @@
 #include <Date.hpp>
 
+#include <stdexcept>
+#include <string>
+#include <ctime>
+
 #include <calender_system/GregorianCalendar.hpp>
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
 #include <calender_system/JapaneseWarekiCalendar.hpp>
 #include <calender_system/FrenchRevolutionaryCalendar.hpp>
+
+namespace {
+    toolbox::GregorianCalendar gregorian_calendar;
+    toolbox::NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
+    toolbox::JulianCalendar julian_calendar;
+    // toolbox::JapaneseWarekiCalendar japanese_wareki_calendar;
+    // toolbox::FrenchRevolutionaryCalendar french_revolutionary_calendar;
+}
 
 toolbox::Date::Date() : _serial_date(0) {}
 
@@ -18,6 +30,37 @@ toolbox::Date& toolbox::Date::operator=(const Date& other) {
 }
 
 toolbox::Date::~Date() {}
+
+// this function is thread-safe
+toolbox::Date toolbox::Date::today() {
+    std::time_t now_sec = std::time(NULL);
+    if (now_sec == static_cast<std::time_t>(-1)) {
+        throw std::runtime_error("Date::today failed: Unable to get current time");
+    }
+    struct std::tm result_tm;
+
+    #ifdef _WIN32
+        // Windows
+        if (localtime_s(&result_tm, &now_sec) != 0) {
+            throw std::runtime_error("Date::today failed: localtime_s failed");
+        }
+    #else
+        // POSIX compliant systems
+        if (localtime_r(&now_sec, &result_tm) == NULL) {
+            throw std::runtime_error("Date::today failed: localtime_r failed");
+        }
+    #endif
+
+    result_tm.tm_hour = 0;
+    result_tm.tm_min = 0;
+    result_tm.tm_sec = 0;
+
+    std::time_t today_sec = std::mktime(&result_tm);
+    if (today_sec == static_cast<std::time_t>(-1)) {
+        throw std::runtime_error("Date::today failed: Unable to convert to time_t");
+    }
+    return Date(static_cast<int>(today_sec / 86400));
+}
 
 toolbox::Date::Date(int serial_date) : _serial_date(serial_date) {}
 
@@ -178,12 +221,6 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
 
 // When adding a new calendar system, add it here.
 toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSystem cal_sys) const {
-    static GregorianCalendar gregorian_calendar;
-    static NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
-    static JulianCalendar julian_calendar;
-    // static JapaneseWarekiCalendar japanese_wareki_calendar;
-    // static FrenchRevolutionaryCalendar french_revolutionary_calendar;
-
     switch (cal_sys) {
         case toolbox::GREGORIAN:
             return gregorian_calendar;
