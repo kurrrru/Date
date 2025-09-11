@@ -1,6 +1,7 @@
 #include <Date.hpp>
 #include <calender_system/GregorianCalendar.hpp>
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
+#include <calender_system/JulianCalendar.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -91,4 +92,25 @@ int main() {
     test_parse_non_proleptic_gregorian("1582114", "%Y%M%D", true, false);
     test_parse_non_proleptic_gregorian("1582/10/14", "%Y/%M/%D", true, false);
     test_parse_non_proleptic_gregorian("1582/10/15", "%Y/%M/%D", true, true);
+
+    date = toolbox::Date(toolbox::GREGORIAN, toolbox::GregorianCalendar::BC, 46, 12, 30);
+    std::cout << date.to_string(toolbox::GREGORIAN, "%E%y-%m-%d") << std::endl;
+    std::cout << date.get_raw_date() << std::endl;
+
+    date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::AD, 1582, 10, 4);
+    std::cout << date.to_string(toolbox::GREGORIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.get_raw_date() << std::endl;
+
+    date = toolbox::Date(toolbox::GREGORIAN, toolbox::GregorianCalendar::AD, 1582, 10, 15);
+    std::cout << date.to_string(toolbox::GREGORIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.get_raw_date() << std::endl;
+    
+    date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::BC, 45, 1, 1);
+    std::cout << date.to_string(toolbox::GREGORIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;
+    std::cout << date.get_raw_date() << std::endl;
+
+
 }
