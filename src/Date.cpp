@@ -31,7 +31,6 @@ toolbox::Date& toolbox::Date::operator=(const Date& other) {
 
 toolbox::Date::~Date() {}
 
-// this function is thread-safe
 toolbox::Date toolbox::Date::today() {
     std::time_t now_sec = std::time(NULL);
     if (now_sec == static_cast<std::time_t>(-1)) {
@@ -51,15 +50,16 @@ toolbox::Date toolbox::Date::today() {
         }
     #endif
 
-    result_tm.tm_hour = 0;
-    result_tm.tm_min = 0;
-    result_tm.tm_sec = 0;
-
-    std::time_t today_sec = std::mktime(&result_tm);
-    if (today_sec == static_cast<std::time_t>(-1)) {
-        throw std::runtime_error("Date::today failed: Unable to convert to time_t");
+    int year = result_tm.tm_year + 1900;
+    int month = result_tm.tm_mon + 1;
+    int day = result_tm.tm_mday;
+    
+    int era = toolbox::GregorianCalendar::AD;
+    if (year <= 0) {
+        era = toolbox::GregorianCalendar::BC;
+        year = 1 - year;
     }
-    return Date(static_cast<int>(today_sec / 86400));
+    return Date(toolbox::GREGORIAN, era, year, month, day);
 }
 
 toolbox::Date::Date(int serial_date) : _serial_date(serial_date) {}

@@ -112,5 +112,8 @@ int main() {
     std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;
     std::cout << date.get_raw_date() << std::endl;
 
+    date = toolbox::Date::today();
+    std::cout << "Today: " << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    std::cout << "Today: " << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
 
 }

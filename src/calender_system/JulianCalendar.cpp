@@ -127,7 +127,7 @@ void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int&
         year = era_year * 4 + static_cast<int>(yoe) - 44;
         const unsigned int doy = doe - yoe * 365;
         const unsigned int mp = (5 * doy + 2) / 153;
-        day = doy - (153 * mp + 2) / 5;
+        day = doy - (153 * mp + 2) / 5 + 1;
         month = mp < 10 ? mp + 3 : mp - 9;
         year += !!(month <= 2);
         era = year <= 0 ? JulianCalendar::BC : JulianCalendar::AD;
@@ -140,7 +140,7 @@ void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int&
         year = static_cast<int>(yoe) - 7;
         const unsigned int doy = z - yoe * 365;
         const unsigned int mp = (5 * doy + 2) / 153;
-        day = doy - (153 * mp + 2) / 5;
+        day = doy - (153 * mp + 2) / 5 + 1;
         month = mp < 10 ? mp + 3 : mp - 9;
         year += !!(month <= 2);
         era = year <= 0 ? JulianCalendar::BC : JulianCalendar::AD;
@@ -155,7 +155,7 @@ void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int&
         year = era_year * 3 + static_cast<int>(yoe) - 45;
         const unsigned int doy = doe - yoe * 365;
         const unsigned int mp = (5 * doy + 2) / 153;
-        day = doy - (153 * mp + 2) / 5;
+        day = doy - (153 * mp + 2) / 5 + 1;
         month = mp < 10 ? mp + 3 : mp - 9;
         year += !!(month <= 2);
         era = year <= 0 ? JulianCalendar::BC : JulianCalendar::AD;
