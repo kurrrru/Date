@@ -2,6 +2,7 @@
 #include <calender_system/GregorianCalendar.hpp>
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
+#include <calender_system/EthiopianCalendar.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -115,5 +116,6 @@ int main() {
     date = toolbox::Date::today();
     std::cout << "Today: " << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
     std::cout << "Today: " << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
+    std::cout << "Today: " << date.to_string(toolbox::ETHIOPIAN, "%Y-%M-%d") << std::endl;
 
 }

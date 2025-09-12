@@ -7,6 +7,7 @@
 #include <calender_system/GregorianCalendar.hpp>
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
+#include <calender_system/EthiopianCalendar.hpp>
 #include <calender_system/JapaneseWarekiCalendar.hpp>
 #include <calender_system/FrenchRevolutionaryCalendar.hpp>
 
@@ -14,6 +15,7 @@ namespace {
     toolbox::GregorianCalendar gregorian_calendar;
     toolbox::NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
     toolbox::JulianCalendar julian_calendar;
+    toolbox::EthiopianCalendar ethiopian_calendar;
     // toolbox::JapaneseWarekiCalendar japanese_wareki_calendar;
     // toolbox::FrenchRevolutionaryCalendar french_revolutionary_calendar;
 }
@@ -228,6 +230,8 @@ toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSy
             return non_proleptic_gregorian_calendar;
         case toolbox::JULIAN:
             return julian_calendar;
+        case toolbox::ETHIOPIAN:
+            return ethiopian_calendar;
         // case toolbox::JAPANESE_WAREKI:
         //     return japanese_wareki_calendar;
         // case toolbox::FRENCH_REVOLUTIONARY:
