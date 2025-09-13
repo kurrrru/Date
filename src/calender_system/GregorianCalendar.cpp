@@ -114,6 +114,7 @@ void GregorianCalendar::from_serial_date(int serial_date,
     if (year <= 0) {
         year = 1 - year;
     }
+    std::cout << "era_year: " << era_year << ", yoe: " << yoe << ", doy: " << doy << ", mp: " << mp << std::endl;
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,

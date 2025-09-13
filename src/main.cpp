@@ -118,4 +118,16 @@ int main() {
     std::cout << "Today: " << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
     std::cout << "Today: " << date.to_string(toolbox::ETHIOPIAN, "%Y-%M-%d") << std::endl;
 
+    date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::BC, 45, 3, 1);
+    std::cout << "BC 45-03-01 (Julian) = " << date.get_raw_date() << std::endl;
+    date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::BC, 7, 3, 1);
+    std::cout << "BC 7-03-01 (Julian) = " << date.get_raw_date() << std::endl;
+    date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::AD, 6, 3, 1);
+    std::cout << "AD 6-03-01 (Julian) = " << date.get_raw_date() << std::endl;
+
+    date = toolbox::Date(toolbox::JULIAN, toolbox::GregorianCalendar::AD, 2024, 8, 31);
+    std::cout << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
+    date += 1;
+    std::cout << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
+    date -= 1;
 }
