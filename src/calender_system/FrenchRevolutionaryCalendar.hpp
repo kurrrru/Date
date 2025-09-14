@@ -10,7 +10,8 @@ class FrenchRevolutionaryCalendar : public ICalendarSystem {
  public:
     FrenchRevolutionaryCalendar();
     FrenchRevolutionaryCalendar(const FrenchRevolutionaryCalendar& other);
-    FrenchRevolutionaryCalendar& operator=(const FrenchRevolutionaryCalendar& other);
+    FrenchRevolutionaryCalendar& operator=(
+        const FrenchRevolutionaryCalendar& other);
     ~FrenchRevolutionaryCalendar();
 
     int to_serial_date(int era, int year, int month, int day) const;

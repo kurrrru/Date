@@ -1,13 +1,13 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <sstream>
+
 #include <Date.hpp>
 #include <calender_system/GregorianCalendar.hpp>
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
 #include <calender_system/EthiopianCalendar.hpp>
-
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <sstream>
 
 void test_parse_gregorian(const std::string& date_str, const char* format, bool strict, bool expect_success) {
     static int test_num = 0;
@@ -30,7 +30,8 @@ void test_parse_gregorian(const std::string& date_str, const char* format, bool 
     }
 }
 
-void test_parse_non_proleptic_gregorian(const std::string& date_str, const char* format, bool strict, bool expect_success) {
+void test_parse_non_proleptic_gregorian(
+    const std::string& date_str, const char* format, bool strict, bool expect_success) {
     static int test_num = 0;
     try {
         toolbox::Date date(toolbox::NON_PROLEPTIC_GREGORIAN, date_str, format, strict);
@@ -107,7 +108,7 @@ int main() {
     std::cout << date.to_string(toolbox::GREGORIAN, "%E%Y-%m-%d") << std::endl;
     std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;
     std::cout << date.get_raw_date() << std::endl;
-    
+
     date = toolbox::Date(toolbox::JULIAN, toolbox::JulianCalendar::BC, 45, 1, 1);
     std::cout << date.to_string(toolbox::GREGORIAN, "%E%Y-%m-%d") << std::endl;
     std::cout << date.to_string(toolbox::JULIAN, "%E%Y-%m-%d") << std::endl;

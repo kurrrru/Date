@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include <string.hpp>
-#include <calender_system/JulianCalendar.hpp> // For Era enum
 
 namespace {
 
@@ -41,38 +40,43 @@ JulianCalendar& JulianCalendar::operator=(const JulianCalendar& other) {
 JulianCalendar::~JulianCalendar() {
 }
 
-int JulianCalendar::to_serial_date(int era, int year, int month, int day) const {
+int JulianCalendar::to_serial_date(
+    int era, int year, int month, int day) const {
     const int julian_bc45_1_1_serial = -735601;
     const int days_before_month[] = {
-        0,   // dummy
-        0,   // January
-        31,  // February
-        59,  // March
-        90,  // April
-        120, // May
-        151, // June
-        181, // July
-        212, // August
-        243, // September
-        273, // October
-        304, // November
-        334, // December
+        0,    // dummy
+        0,    // January
+        31,   // February
+        59,   // March
+        90,   // April
+        120,  // May
+        151,  // June
+        181,  // July
+        212,  // August
+        243,  // September
+        273,  // October
+        304,  // November
+        334,  // December
     };
 
     if (era < 0 || era >= JulianCalendar::END_OF_ERA) {
-        throw std::out_of_range("JulianCalendar::to_serial_date failed: Invalid era");
+        throw std::out_of_range(
+            "JulianCalendar::to_serial_date failed: Invalid era");
     }
     if (year <= 0) {
-        throw std::out_of_range("JulianCalendar::to_serial_date failed: year must be positive");
+        throw std::out_of_range(
+            "JulianCalendar::to_serial_date failed: year must be positive");
     }
     if (era == JulianCalendar::BC) {
         year = 1 - year;
     }
     if (month < 1 || month > 12) {
-        throw std::out_of_range("JulianCalendar::to_serial_date failed: month must be in 1..12");
+        throw std::out_of_range(
+            "JulianCalendar::to_serial_date failed: month must be in 1..12");
     }
     if (day < 1 || day > last_day_of_month(year, month)) {
-        throw std::out_of_range("JulianCalendar::to_serial_date failed: day is out of range");
+        throw std::out_of_range(
+            "JulianCalendar::to_serial_date failed: day is out of range");
     }
 
     int count_leaps = 0;
@@ -86,12 +90,13 @@ int JulianCalendar::to_serial_date(int era, int year, int month, int day) const 
         count_leaps = 13;
     }
     int total_days = (year + 44) * 365 + count_leaps;
-    total_days += days_before_month[month] + (month > 2 && is_leap(year) ? 1 : 0);
+    total_days += days_before_month[month] + !!(month > 2 && is_leap(year));
     total_days += day - 1;
     return total_days + julian_bc45_1_1_serial;
 }
 
-int JulianCalendar::to_serial_date(const std::string& date_str, const char* format, bool strict) const {
+int JulianCalendar::to_serial_date(
+    const std::string& date_str, const char* format, bool strict) const {
     if (!format) {
         throw std::invalid_argument("JulianCalendar::to_serial_date failed: "
             "format is null");
@@ -115,11 +120,13 @@ int JulianCalendar::to_serial_date(const std::string& date_str, const char* form
     return serial;
 }
 
-void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int& month, int& day) const {
-    const int julian_bc45_3_1_serial = -735541; // to_serial_date(JulianCalendar::BC, 45, 3, 1);
-    const int julian_bc7_3_1_serial = -721659; // to_serial_date(JulianCalendar::BC, 7, 3, 1);
-    const int julian_ad4_3_1_serial = -717279; // to_serial_date(JulianCalendar::AD, 4, 3, 1);
-    if (serial_date < julian_bc45_3_1_serial || serial_date > julian_ad4_3_1_serial) {
+void JulianCalendar::from_serial_date(
+    int serial_date, int& era, int& year, int& month, int& day) const {
+    const int julian_bc45_3_1_serial = -735541;  // BC45/3/1(Julian)
+    const int julian_bc7_3_1_serial = -721659;  // BC7/3/1(Julian)
+    const int julian_ad4_3_1_serial = -717279;  // AD4/3/1(Julian)
+    if (serial_date < julian_bc45_3_1_serial
+        || serial_date > julian_ad4_3_1_serial) {
         int z = serial_date - julian_bc45_3_1_serial;
         const int era_year = (z >= 0 ? z : z - 1460) / 1461;
         const unsigned int doe = static_cast<unsigned int>(z - era_year * 1461);
@@ -134,7 +141,6 @@ void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int&
         if (year <= 0) {
             year = 1 - year;
         }
-        std::cout << "era_year: " << era_year << ", yoe: " << yoe << ", doy: " << doy << ", mp: " << mp << std::endl;
     } else if (serial_date >= julian_bc7_3_1_serial) {
         int z = serial_date - julian_bc7_3_1_serial;
         const unsigned int yoe = z / 365;
@@ -169,7 +175,8 @@ void JulianCalendar::from_serial_date(int serial_date, int& era, int& year, int&
 void JulianCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
     if (!format) {
-        throw std::invalid_argument("JulianCalendar::from_serial_date failed: format is null");
+        throw std::invalid_argument(
+            "JulianCalendar::from_serial_date failed: format is null");
     }
     int era, year, month, day;
     from_serial_date(serial_date, era, year, month, day);
@@ -203,7 +210,8 @@ void JulianCalendar::from_serial_date(int serial_date,
                     ss << '%';
                     break;
                 default:
-                    throw std::invalid_argument("JulianCalendar::from_serial_date failed: "
+                    throw std::invalid_argument(
+                        "JulianCalendar::from_serial_date failed: "
                         "Invalid format specifier");
             }
         } else {
@@ -222,7 +230,7 @@ void JulianCalendar::from_serial_date(int serial_date,
 void JulianCalendar::parse_formatted_date(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -236,11 +244,13 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
                 if (!all_found) {
                     serial = ret;
                 }
-            } catch (std::exception &e){
+            } catch (std::exception &e) {
                 return;
             }
             if (all_found) {
-                throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: date_str is ambiguous");
+                throw std::invalid_argument(
+                    "JulianCalendar::parse_formatted_date failed: "
+                    "date_str is ambiguous");
             }
             all_found = true;
         }
@@ -266,7 +276,9 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
     switch (format[1]) {
         case 'E': case 'e': {
             if (era_found) {
-                throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: era is specified multiple times");
+                throw std::invalid_argument(
+                    "JulianCalendar::parse_formatted_date failed: "
+                    "era is specified multiple times");
             }
             parse_Ee(date_str, pos, format,
                 era, era_found,
@@ -280,7 +292,9 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
         }
         case 'Y': case 'y': {
             if (year_found) {
-                throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: year is specified multiple times");
+                throw std::invalid_argument(
+                    "JulianCalendar::parse_formatted_date failed: "
+                    "year is specified multiple times");
             }
             parse_Yy(date_str, pos, format,
                 era, era_found,
@@ -294,7 +308,9 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
         }
         case 'M': case 'm': {
             if (month_found) {
-                throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: month is specified multiple times");
+                throw std::invalid_argument(
+                    "JulianCalendar::parse_formatted_date failed: "
+                    "month is specified multiple times");
             }
             parse_Mm(date_str, pos, format,
                 era, era_found,
@@ -308,7 +324,9 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
         }
         case 'D': case 'd': {
             if (day_found) {
-                throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: day is specified multiple times");
+                throw std::invalid_argument(
+                    "JulianCalendar::parse_formatted_date failed: "
+                    "day is specified multiple times");
             }
             parse_Dd(date_str, pos, format,
                 era, era_found,
@@ -335,7 +353,8 @@ void JulianCalendar::parse_formatted_date(const std::string& date_str,
             return;
         }
         default:
-            throw std::invalid_argument("JulianCalendar::parse_formatted_date failed: "
+            throw std::invalid_argument(
+                "JulianCalendar::parse_formatted_date failed: "
                 "Invalid format specifier: %" + toolbox::to_string(format[1]));
     }
 }
@@ -376,7 +395,8 @@ void JulianCalendar::parse_Ee(const std::string& date_str,
             return;
         }
     }
-    throw std::invalid_argument("JulianCalendar::parse_Ee failed: era not found in date_str at position "
+    throw std::invalid_argument("JulianCalendar::parse_Ee failed: "
+        "era not found in date_str at position "
         + toolbox::to_string(pos));
 }
 
@@ -397,7 +417,8 @@ void JulianCalendar::parse_Yy(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size(); ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size(); ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -459,7 +480,8 @@ void JulianCalendar::parse_Mm(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -516,11 +538,12 @@ void JulianCalendar::parse_Dd(const std::string& date_str,
     bool strict
 ) const {
     (void)day_found;
-    if (std::isupper(format[1])) { // %D
+    if (std::isupper(format[1])) {  // %D
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -562,12 +585,13 @@ void JulianCalendar::parse_Dd(const std::string& date_str,
     }
 }
 
-} // namespace toolbox
+}  // namespace toolbox
 
 namespace {
 
 bool is_leap(int year) {
-    return ((year >= 8 || year <= -44)  && year % 4 == 0) || (year >= -43 && year <= -7 && (year - 2) % 3 == 0);
+    return ((year >= 8 || year <= -44)  && year % 4 == 0)
+        || (year >= -43 && year <= -7 && (year - 2) % 3 == 0);
 }
 
 int last_day_of_month(int year, int month) {
@@ -590,14 +614,16 @@ std::string to_string_Ee(int era, bool uppercase) {
         /* [toolbox::JulianCalendar::AD] = */ "AD",
     };
     if (era < 0 || era >= toolbox::JulianCalendar::END_OF_ERA) {
-        throw std::out_of_range("to_string_Ee failed: Invalid era: " + toolbox::to_string(era));
+        throw std::out_of_range("to_string_Ee failed: Invalid era: "
+            + toolbox::to_string(era));
     }
     return uppercase ? era_str_E[era] : era_str_e[era];
 }
 
 std::string to_string_Yy(int year, bool uppercase) {
     if (year <= 0) {
-        throw std::out_of_range("to_string_Yy failed: year must be positive and not zero");
+        throw std::out_of_range("to_string_Yy failed: "
+            "year must be positive and not zero");
     }
     std::ostringstream oss;
     if (uppercase) {
@@ -646,7 +672,8 @@ std::string to_string_Ww(int day_of_week, bool uppercase) {
     if (day_of_week < 0 || day_of_week > 6) {
         throw std::out_of_range("to_string_Ww: day_of_week must be in 0..6");
     }
-    return uppercase ? day_of_week_str_W[day_of_week] : day_of_week_str_w[day_of_week];
+    return uppercase ?
+        day_of_week_str_W[day_of_week] : day_of_week_str_w[day_of_week];
 }
 
 }  // namespace

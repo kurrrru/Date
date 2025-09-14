@@ -12,12 +12,12 @@
 #include <calender_system/FrenchRevolutionaryCalendar.hpp>
 
 namespace {
-    toolbox::GregorianCalendar gregorian_calendar;
-    toolbox::NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
-    toolbox::JulianCalendar julian_calendar;
-    toolbox::EthiopianCalendar ethiopian_calendar;
-    // toolbox::JapaneseWarekiCalendar japanese_wareki_calendar;
-    // toolbox::FrenchRevolutionaryCalendar french_revolutionary_calendar;
+toolbox::GregorianCalendar gregorian_calendar;
+toolbox::NonProlepticGregorianCalendar non_proleptic_gregorian_calendar;
+toolbox::JulianCalendar julian_calendar;
+toolbox::EthiopianCalendar ethiopian_calendar;
+// toolbox::JapaneseWarekiCalendar japanese_wareki_calendar;
+// toolbox::FrenchRevolutionaryCalendar french_revolutionary_calendar;
 }
 
 toolbox::Date::Date() : _serial_date(0) {}
@@ -36,7 +36,8 @@ toolbox::Date::~Date() {}
 toolbox::Date toolbox::Date::today() {
     std::time_t now_sec = std::time(NULL);
     if (now_sec == static_cast<std::time_t>(-1)) {
-        throw std::runtime_error("Date::today failed: Unable to get current time");
+        throw std::runtime_error(
+            "Date::today failed: Unable to get current time");
     }
     struct std::tm result_tm;
 
@@ -55,7 +56,7 @@ toolbox::Date toolbox::Date::today() {
     int year = result_tm.tm_year + 1900;
     int month = result_tm.tm_mon + 1;
     int day = result_tm.tm_mday;
-    
+
     int era = toolbox::GregorianCalendar::AD;
     if (year <= 0) {
         era = toolbox::GregorianCalendar::BC;
@@ -71,8 +72,8 @@ toolbox::Date::Date(toolbox::CalendarSystem cal_sys, int era,
     _serial_date = convert_to_serial_date(cal_sys, era, year, month, day);
 }
 
-toolbox::Date::Date(toolbox::CalendarSystem cal_sys, const std::string& date_str,
-        const char* format, bool strict) {
+toolbox::Date::Date(toolbox::CalendarSystem cal_sys,
+        const std::string& date_str, const char* format, bool strict) {
     if (!format) {
         throw std::invalid_argument("Date::Date failed: format is null");
     }
@@ -194,7 +195,8 @@ void toolbox::Date::convert_form_serial_date(toolbox::CalendarSystem cal_sys,
 void toolbox::Date::convert_from_serial_date(toolbox::CalendarSystem cal_sys,
         std::string& date_str, const char* format) const {
     if (!format) {
-        throw std::invalid_argument("Date::convert_from_serial_date failed: format is null");
+        throw std::invalid_argument(
+            "Date::convert_from_serial_date failed: format is null");
     }
     ICalendarSystem& calendar_system = get_calendar_system(cal_sys);
     calendar_system.from_serial_date(_serial_date, date_str, format);
@@ -215,14 +217,16 @@ int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
 int toolbox::Date::convert_to_serial_date(toolbox::CalendarSystem cal_sys,
         const std::string& date_str, const char* format, bool strict) const {
     if (!format) {
-        throw std::invalid_argument("Date::convert_to_serial_date failed: format is null");
+        throw std::invalid_argument(
+            "Date::convert_to_serial_date failed: format is null");
     }
     ICalendarSystem& calendar_system = get_calendar_system(cal_sys);
     return calendar_system.to_serial_date(date_str, format, strict);
 }
 
 // When adding a new calendar system, add it here.
-toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(toolbox::CalendarSystem cal_sys) const {
+toolbox::ICalendarSystem& toolbox::Date::get_calendar_system(
+        toolbox::CalendarSystem cal_sys) const {
     switch (cal_sys) {
         case toolbox::GREGORIAN:
             return gregorian_calendar;

@@ -15,11 +15,13 @@ namespace toolbox {
 NonProlepticGregorianCalendar::NonProlepticGregorianCalendar() {
 }
 
-NonProlepticGregorianCalendar::NonProlepticGregorianCalendar(const NonProlepticGregorianCalendar&other) {
+NonProlepticGregorianCalendar::NonProlepticGregorianCalendar(
+    const NonProlepticGregorianCalendar&other) {
     (void)other;
 }
 
-NonProlepticGregorianCalendar& NonProlepticGregorianCalendar::operator=(const NonProlepticGregorianCalendar& other) {
+NonProlepticGregorianCalendar& NonProlepticGregorianCalendar::operator=(
+    const NonProlepticGregorianCalendar& other) {
     (void)other;
     return *this;
 }
@@ -38,7 +40,8 @@ int NonProlepticGregorianCalendar::to_serial_date(int era,
 int NonProlepticGregorianCalendar::to_serial_date(const std::string& date_str,
     const char* format, bool strict) const {
     if (!format) {
-        throw std::invalid_argument("NonProlepticGregorianCalendar::to_serial_date failed: "
+        throw std::invalid_argument(
+            "NonProlepticGregorianCalendar::to_serial_date failed: "
             "format is null");
     }
     int era = toolbox::NonProlepticGregorianCalendar::AD;
@@ -54,7 +57,8 @@ int NonProlepticGregorianCalendar::to_serial_date(const std::string& date_str,
         serial,
         strict);
     if (!all_found) {
-        throw std::invalid_argument("NonProlepticGregorianCalendar::to_serial_date failed: "
+        throw std::invalid_argument(
+            "NonProlepticGregorianCalendar::to_serial_date failed: "
             "Something went wrong while parsing date_str");
     }
     return serial;
@@ -81,19 +85,23 @@ void NonProlepticGregorianCalendar::from_serial_date(int serial_date,
     gc.from_serial_date(serial_date, day_of_week);
 }
 
-void NonProlepticGregorianCalendar::validate_serial_date(int serial_date) const {
+void NonProlepticGregorianCalendar::validate_serial_date(
+    int serial_date) const {
     // -141427 is 1582-10-15 in Gregorian calendar
     const int begin_gregorian = -141427;
     if (serial_date < begin_gregorian) {
-        throw std::out_of_range("NonProlepticGregorianCalendar::validate_serial_date failed: "
-            "Dates before 1582-10-15 does not exist in non-proleptic Gregorian calendar");
+        throw std::out_of_range(
+            "NonProlepticGregorianCalendar::validate_serial_date failed: "
+            "Dates before 1582-10-15 does not exist "
+            "in non-proleptic Gregorian calendar");
     }
 }
 
-void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date_str,
+void NonProlepticGregorianCalendar::parse_formatted_date(
+    const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -107,11 +115,14 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
                 if (!all_found) {
                     serial = ret;
                 }
-            } catch (std::exception &e){
+            } catch (std::exception &e) {
                 return;
             }
             if (all_found) {
-                throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: date_str is ambiguous");
+                throw std::invalid_argument(
+                    "NonProlepticGregorianCalendar::"
+                    "parse_formatted_date failed: "
+                    "date_str is ambiguous");
             }
             all_found = true;
         }
@@ -138,7 +149,10 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
         case 'E':
         case 'e': {
             if (era_found) {
-                throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: era is specified multiple times");
+                throw std::invalid_argument(
+                    "NonProlepticGregorianCalendar::"
+                    "parse_formatted_date failed: "
+                    "era is specified multiple times");
             }
             parse_Ee(date_str, pos, format,
                 era, era_found,
@@ -153,7 +167,10 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
         case 'Y':
         case 'y': {
             if (year_found) {
-                throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: year is specified multiple times");
+                throw std::invalid_argument(
+                    "NonProlepticGregorianCalendar::"
+                    "parse_formatted_date failed: "
+                    "year is specified multiple times");
             }
             parse_Yy(date_str, pos, format,
                 era, era_found,
@@ -168,7 +185,10 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
         case 'M':
         case 'm': {
             if (month_found) {
-                throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: month is specified multiple times");
+                throw std::invalid_argument(
+                    "NonProlepticGregorianCalendar::"
+                    "parse_formatted_date failed: "
+                    "month is specified multiple times");
             }
             parse_Mm(date_str, pos, format,
                 era, era_found,
@@ -183,7 +203,10 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
         case 'D':
         case 'd': {
             if (day_found) {
-                throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: day is specified multiple times");
+                throw std::invalid_argument(
+                    "NonProlepticGregorianCalendar::"
+                    "parse_formatted_date failed: "
+                    "day is specified multiple times");
             }
             parse_Dd(date_str, pos, format,
                 era, era_found,
@@ -210,7 +233,9 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
             return;
         }
         default:
-            throw std::invalid_argument("NonProlepticGregorianCalendar::parse_formatted_date failed: "
+            throw std::invalid_argument(
+                "NonProlepticGregorianCalendar::"
+                "parse_formatted_date failed: "
                 "Invalid format specifier: %" + toolbox::to_string(format[1]));
     }
 }
@@ -218,7 +243,7 @@ void NonProlepticGregorianCalendar::parse_formatted_date(const std::string& date
 void NonProlepticGregorianCalendar::parse_Ee(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -251,14 +276,16 @@ void NonProlepticGregorianCalendar::parse_Ee(const std::string& date_str,
             return;
         }
     }
-    throw std::invalid_argument("NonProlepticGregorianCalendar::parse_Ee failed: era not found in date_str at position "
+    throw std::invalid_argument(
+        "NonProlepticGregorianCalendar::"
+        "parse_Ee failed: era not found in date_str at position "
         + toolbox::to_string(pos));
 }
 
 void NonProlepticGregorianCalendar::parse_Yy(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -272,7 +299,8 @@ void NonProlepticGregorianCalendar::parse_Yy(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size(); ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size(); ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -320,8 +348,8 @@ void NonProlepticGregorianCalendar::parse_Yy(const std::string& date_str,
 void NonProlepticGregorianCalendar::parse_Mm(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
-    int& year, bool year_found, 
+    int& era, bool era_found,
+    int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
     bool& all_found,
@@ -334,7 +362,8 @@ void NonProlepticGregorianCalendar::parse_Mm(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -382,7 +411,7 @@ void NonProlepticGregorianCalendar::parse_Mm(const std::string& date_str,
 void NonProlepticGregorianCalendar::parse_Dd(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -396,7 +425,8 @@ void NonProlepticGregorianCalendar::parse_Dd(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -441,4 +471,4 @@ void NonProlepticGregorianCalendar::parse_Dd(const std::string& date_str,
     }
 }
 
-}  // toolbox
+}  // namespace toolbox

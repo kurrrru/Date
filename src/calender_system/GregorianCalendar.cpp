@@ -22,7 +22,7 @@ std::string to_string_Ww(int day_of_week, bool uppercase);
 }  // namespace
 
 namespace toolbox {
-    
+
 GregorianCalendar::GregorianCalendar() {
 }
 
@@ -30,7 +30,8 @@ GregorianCalendar::GregorianCalendar(const GregorianCalendar& other) {
     (void)other;
 }
 
-GregorianCalendar& GregorianCalendar::operator=(const GregorianCalendar& other) {
+GregorianCalendar& GregorianCalendar::operator=(
+    const GregorianCalendar& other) {
     (void)other;
     return *this;
 }
@@ -66,7 +67,8 @@ int GregorianCalendar::to_serial_date(int era,
     year -= !!(month <= 2);
     const int era_year = (year >= 0 ? year : year - 399) / 400;
     const unsigned int yoe = static_cast<unsigned int>(year - era_year * 400);
-    const unsigned int doy = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1;
+    const unsigned int doy = (153 * (month > 2 ? month - 3 : month + 9) + 2)
+        / 5 + day - 1;
     const unsigned int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
     return era_year * 146097 + static_cast<int>(doe) - 719468;
 }
@@ -103,7 +105,8 @@ void GregorianCalendar::from_serial_date(int serial_date,
     int z = serial_date + 719468;
     const int era_year = (z >= 0 ? z : z - 146096) / 146097;
     const unsigned int doe = static_cast<unsigned int>(z - era_year * 146097);
-    const unsigned int yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    const unsigned int yoe = (doe - doe / 1460 + doe / 36524
+        - doe / 146096) / 365;
     year = static_cast<int>(yoe) + era_year * 400;
     const unsigned int doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
     const unsigned int mp = (5 * doy + 2) / 153;
@@ -114,13 +117,13 @@ void GregorianCalendar::from_serial_date(int serial_date,
     if (year <= 0) {
         year = 1 - year;
     }
-    std::cout << "era_year: " << era_year << ", yoe: " << yoe << ", doy: " << doy << ", mp: " << mp << std::endl;
 }
 
 void GregorianCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
     if (!format) {
-        throw std::invalid_argument("GregorianCalendar::from_serial_date failed: "
+        throw std::invalid_argument(
+            "GregorianCalendar::from_serial_date failed: "
             "format is null");
     }
     int era, year, month, day;
@@ -155,8 +158,10 @@ void GregorianCalendar::from_serial_date(int serial_date,
                     ss << '%';
                     break;
                 default:
-                    throw std::invalid_argument("GregorianCalendar::from_serial_date failed: "
-                        "Invalid format specifier: %" + toolbox::to_string(format[i]));
+                    throw std::invalid_argument(
+                        "GregorianCalendar::from_serial_date failed: "
+                        "Invalid format specifier: %"
+                        + toolbox::to_string(format[i]));
             }
         } else {
             ss << format[i];
@@ -174,7 +179,7 @@ void GregorianCalendar::from_serial_date(int serial_date,
 void GregorianCalendar::parse_formatted_date(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -188,11 +193,13 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
                 if (!all_found) {
                     serial = ret;
                 }
-            } catch (std::exception &e){
+            } catch (std::exception &e) {
                 return;
             }
             if (all_found) {
-                throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: date_str is ambiguous");
+                throw std::invalid_argument(
+                    "GregorianCalendar::parse_formatted_date failed: "
+                    "date_str is ambiguous");
             }
             all_found = true;
         }
@@ -219,7 +226,9 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
         case 'E':
         case 'e': {
             if (era_found) {
-                throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: era is specified multiple times");
+                throw std::invalid_argument(
+                    "GregorianCalendar::parse_formatted_date failed: "
+                    "era is specified multiple times");
             }
             parse_Ee(date_str, pos, format,
                 era, era_found,
@@ -234,7 +243,9 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
         case 'Y':
         case 'y': {
             if (year_found) {
-                throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: year is specified multiple times");
+                throw std::invalid_argument(
+                    "GregorianCalendar::parse_formatted_date failed: "
+                    "year is specified multiple times");
             }
             parse_Yy(date_str, pos, format,
                 era, era_found,
@@ -249,7 +260,9 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
         case 'M':
         case 'm': {
             if (month_found) {
-                throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: month is specified multiple times");
+                throw std::invalid_argument(
+                    "GregorianCalendar::parse_formatted_date failed: "
+                    "month is specified multiple times");
             }
             parse_Mm(date_str, pos, format,
                 era, era_found,
@@ -264,7 +277,9 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
         case 'D':
         case 'd': {
             if (day_found) {
-                throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: day is specified multiple times");
+                throw std::invalid_argument(
+                    "GregorianCalendar::parse_formatted_date failed: "
+                    "day is specified multiple times");
             }
             parse_Dd(date_str, pos, format,
                 era, era_found,
@@ -291,16 +306,16 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
             return;
         }
         default:
-            throw std::invalid_argument("GregorianCalendar::parse_formatted_date failed: "
+            throw std::invalid_argument(
+                "GregorianCalendar::parse_formatted_date failed: "
                 "Invalid format specifier: %" + toolbox::to_string(format[1]));
     }
-
 }
 
 void GregorianCalendar::parse_Ee(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -333,14 +348,16 @@ void GregorianCalendar::parse_Ee(const std::string& date_str,
             return;
         }
     }
-    throw std::invalid_argument("GregorianCalendar::parse_Ee failed: era not found in date_str at position "
+    throw std::invalid_argument(
+        "GregorianCalendar::parse_Ee failed: "
+        "era not found in date_str at position "
         + toolbox::to_string(pos));
 }
 
 void GregorianCalendar::parse_Yy(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -354,7 +371,8 @@ void GregorianCalendar::parse_Yy(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size(); ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size(); ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -402,8 +420,8 @@ void GregorianCalendar::parse_Yy(const std::string& date_str,
 void GregorianCalendar::parse_Mm(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
-    int& year, bool year_found, 
+    int& era, bool era_found,
+    int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
     bool& all_found,
@@ -416,7 +434,8 @@ void GregorianCalendar::parse_Mm(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -464,7 +483,7 @@ void GregorianCalendar::parse_Mm(const std::string& date_str,
 void GregorianCalendar::parse_Dd(const std::string& date_str,
     std::size_t pos,
     const char* format,
-    int& era, bool era_found, 
+    int& era, bool era_found,
     int& year, bool year_found,
     int& month, bool month_found,
     int& day, bool day_found,
@@ -478,7 +497,8 @@ void GregorianCalendar::parse_Dd(const std::string& date_str,
         if (date_str[pos] == '0') {
             return;
         }
-        for (std::size_t num_len = 1; pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
+        for (std::size_t num_len = 1;
+            pos + num_len <= date_str.size() && num_len <= 2; ++num_len) {
             if (!std::isdigit(date_str[pos + num_len - 1])) {
                 break;
             }
@@ -550,7 +570,8 @@ std::string to_string_Ee(int era, bool uppercase) {
         /* [toolbox::GregorianCalendar::AD] = */ "AD",
     };
     if (era < 0 || era >= toolbox::GregorianCalendar::END_OF_ERA) {
-        throw std::out_of_range("to_string_Ee failed: Invalid era: " + toolbox::to_string(era));
+        throw std::out_of_range(
+            "to_string_Ee failed: Invalid era: " + toolbox::to_string(era));
     }
     return uppercase ? era_str_E[era] : era_str_e[era];
 }
@@ -559,7 +580,8 @@ std::string to_string_Yy(int year, bool uppercase) {
     if (year < 0) {
         throw std::out_of_range("to_string_Yy failed: year must be positive");
     } else if (year == 0) {
-        throw std::out_of_range("to_string_Yy failed: year 0 does not exist in Gregorian calendar");
+        throw std::out_of_range("to_string_Yy failed: "
+            "year 0 does not exist in Gregorian calendar");
     }
     std::ostringstream oss;
     if (uppercase) {
@@ -608,7 +630,8 @@ std::string to_string_Ww(int day_of_week, bool uppercase) {
     if (day_of_week < 0 || day_of_week > 6) {
         throw std::out_of_range("to_string_Ww: day_of_week must be in 0..6");
     }
-    return uppercase ? day_of_week_str_W[day_of_week] : day_of_week_str_w[day_of_week];
+    return uppercase ?
+        day_of_week_str_W[day_of_week] : day_of_week_str_w[day_of_week];
 }
 
 }  // namespace

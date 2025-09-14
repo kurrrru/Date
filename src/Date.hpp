@@ -57,7 +57,8 @@ class Date {
         int& day_of_week) const;
     int convert_to_serial_date(CalendarSystem cal_sys,
         int era, int year, int month, int day) const;
-    int convert_to_serial_date(CalendarSystem cal_sys, const std::string& date_str,
+    int convert_to_serial_date(CalendarSystem cal_sys,
+        const std::string& date_str,
         const char* format, bool strict) const;
     ICalendarSystem& get_calendar_system(CalendarSystem cal_sys) const;
 
