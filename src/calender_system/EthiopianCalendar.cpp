@@ -110,11 +110,11 @@ void EthiopianCalendar::from_serial_date(int serial_date,
         throw std::out_of_range("EthiopianCalendar::from_serial_date failed: "
             "serial_date is out of range");
     }
-    int z = serial_date - ethiopian_epoch;
+    int z = serial_date - ethiopian_epoch - 365;
     int era_year = (z >= 0 ? z : z - 1460) / 1461;
     int doe = z - era_year * 1461;
     int yoe = (doe - doe / 1460) / 365;
-    year = yoe + era_year * 4 + 1;
+    year = yoe + era_year * 4 + 2;
     int doy = doe - (365 * yoe + yoe / 4);
     month = doy / 30 + 1;
     day = doy % 30 + 1;
