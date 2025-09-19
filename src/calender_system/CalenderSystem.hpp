@@ -8,7 +8,7 @@ enum CalendarSystem {
     JULIAN,
     ETHIOPIAN,
     JAPANESE_WAREKI,
-    FRENCH_REVOLUTIONARY
+    FRENCH_REPUBLICAN
     // Add more calendar systems as needed
 };
 

@@ -6,13 +6,14 @@
 
 namespace toolbox {
 
-class FrenchRevolutionaryCalendar : public ICalendarSystem {
+class FrenchRepublicanCalendar : public ICalendarSystem {
  public:
-    FrenchRevolutionaryCalendar();
-    FrenchRevolutionaryCalendar(const FrenchRevolutionaryCalendar& other);
-    FrenchRevolutionaryCalendar& operator=(
-        const FrenchRevolutionaryCalendar& other);
-    ~FrenchRevolutionaryCalendar();
+    FrenchRepublicanCalendar();
+    FrenchRepublicanCalendar(const FrenchRepublicanCalendar& other);
+    FrenchRepublicanCalendar& operator=(
+        
+    const FrenchRepublicanCalendar& other);
+    ~FrenchRepublicanCalendar();
 
     int to_serial_date(int era, int year, int month, int day) const;
     int to_serial_date(const std::string& date_str,
