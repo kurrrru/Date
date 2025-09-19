@@ -133,64 +133,42 @@ void EthiopianCalendar::from_serial_date(int serial_date,
             "EthiopianCalendar::from_serial_date failed: "
             "format is null");
     }
-    int era = 0, year = 0, month = 0, day = 0;
+    int era, year, month, day;
     from_serial_date(serial_date, era, year, month, day);
+    int day_of_week;
+    from_serial_date(serial_date, day_of_week);
     std::ostringstream ss;
     for (std::size_t i = 0; format[i]; ++i) {
         if (format[i] == '%') {
-            if (!format[i + 1]) {
-                throw std::invalid_argument(
-                    "EthiopianCalendar::from_serial_date failed: "
-                    "Invalid format string: ends with %");
-            }
-            switch (format[i + 1]) {
-        case 'E':
-        case 'e': {
-            bool uppercase = std::isupper(format[i + 1]);
-            ss << to_string_Ee(era, uppercase);
-            i += 1;
-            break;
-        }
-        case 'Y':
-        case 'y': {
-            bool uppercase = std::isupper(format[i + 1]);
-            ss << to_string_Yy(year, uppercase);
-            i += 1;
-            break;
-        }
-        case 'M':
-        case 'm': {
-            bool uppercase = std::isupper(format[i + 1]);
-            ss << to_string_Mm(month, uppercase);
-            i += 1;
-            break;
-        }
-        case 'D':
-        case 'd': {
-            bool uppercase = std::isupper(format[i + 1]);
-            ss << to_string_Dd(day, uppercase);
-            i += 1;
-            break;
-        }
-        case 'W':
-        case 'w': {
-            bool uppercase = std::isupper(format[i + 1]);
-            int day_of_week = 0;
-            from_serial_date(serial_date, day_of_week);
-            ss << to_string_Ww(day_of_week, uppercase);
-            i += 1;
-            break;
-        }
-        case '%': {
-            ss << '%';
-            i += 1;
-            break;
-        }
-        default:
-            throw std::invalid_argument(
-                "EthiopianCalendar::from_serial_date failed: "
-                "Invalid format specifier: %"
-                + toolbox::to_string(format[i + 1]));
+            switch (format[++i]) {
+                case 'E':
+                case 'e':
+                    ss << to_string_Ee(era, std::isupper(format[i]));
+                    break;
+                case 'Y':
+                case 'y':
+                    ss << to_string_Yy(year, std::isupper(format[i]));
+                    break;
+                case 'M':
+                case 'm':
+                    ss << to_string_Mm(month, std::isupper(format[i]));
+                    break;
+                case 'D':
+                case 'd':
+                    ss << to_string_Dd(day, std::isupper(format[i]));
+                    break;
+                case 'W':
+                case 'w':
+                    ss << to_string_Ww(day_of_week, std::isupper(format[i]));
+                    break;
+                case '%':
+                    ss << '%';
+                    break;
+                default:
+                    throw std::invalid_argument(
+                        "EthiopianCalendar::from_serial_date failed: "
+                        "Invalid format specifier: %"
+                        + toolbox::to_string(format[i]));
             }
         } else {
             ss << format[i];
@@ -215,30 +193,30 @@ void EthiopianCalendar::parse_formatted_date(
     int& day, bool day_found,
     bool& all_found,
     int& serial,
-    bool strict
-) const {
-    if (all_found) {
-        if (strict && pos != date_str.size()) {
-            throw std::invalid_argument(
-                "EthiopianCalendar::parse_formatted_date failed: "
-                "Extra characters found in date_str at position "
-                + toolbox::to_string(pos));
+    bool strict) const {
+    if (pos >= date_str.size() && !*format) {
+        if (year_found && month_found && day_found) {
+            try {
+                int ret = to_serial_date(era, year, month, day);
+                if (!all_found) {
+                    serial = ret;
+                }
+            } catch (std::exception &e) {
+                return;
+            }
+            if (all_found) {
+                throw std::invalid_argument(
+                    "EthiopianCalendar::parse_formatted_date failed: "
+                    "date_str is ambiguous");
+            }
+            all_found = true;
         }
         return;
     }
-    if (!format[0]) {
-        if (strict || pos == date_str.size()) {
-            all_found = era_found && year_found && month_found && day_found;
-        }
+    if (pos >= date_str.size() || !*format) {
         return;
     }
-    if (pos >= date_str.size()) {
-        return;
-    }
-    if (format[0] != '%') {
-        if (date_str[pos] != format[0]) {
-            return;
-        }
+    if (date_str[pos] == format[0] && format[0] != '%') {
         parse_formatted_date(date_str, pos + 1, format + 1,
             era, era_found,
             year, year_found,
@@ -249,10 +227,8 @@ void EthiopianCalendar::parse_formatted_date(
             strict);
         return;
     }
-    if (!format[1]) {
-        throw std::invalid_argument(
-            "EthiopianCalendar::parse_formatted_date failed: "
-            "Invalid format string: ends with %");
+    if (format[0] != '%') {
+        return;
     }
     switch (format[1]) {
         case 'E':
@@ -340,8 +316,7 @@ void EthiopianCalendar::parse_formatted_date(
         default:
             throw std::invalid_argument(
                 "EthiopianCalendar::parse_formatted_date failed: "
-                "Invalid format specifier: %"
-                + toolbox::to_string(format[1]));
+                "Invalid format specifier: %" + toolbox::to_string(format[1]));
     }
 }
 
@@ -356,11 +331,12 @@ void EthiopianCalendar::parse_Ee(const std::string& date_str,
     int& serial,
     bool strict
 ) const {
-    const char *era_str_E[] = {
+    (void)era_found;
+    const char* era_str_E[] = {
         /* [toolbox::EthiopianCalendar::BC] = */ "B.C.",
         /* [toolbox::EthiopianCalendar::AD] = */ "A.D.",
     };
-    const char *era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::EthiopianCalendar::BC] = */ "BC",
         /* [toolbox::EthiopianCalendar::AD] = */ "AD",
     };
@@ -626,8 +602,7 @@ std::string to_string_Ee(int era, bool uppercase) {
 std::string to_string_Yy(int year, bool uppercase) {
     std::ostringstream oss;
     if (year < 0) {
-        throw std::out_of_range("to_string_Yy failed: "
-            "year must be non-negative");
+        throw std::out_of_range("to_string_Yy failed: year must be positive");
     } else if (year == 0) {
         throw std::out_of_range("to_string_Yy failed: "
             "year 0 does not exist in Ethiopian calendar");
@@ -681,7 +656,6 @@ std::string to_string_Dd(int day, bool uppercase) {
     }
     return oss.str();
 }
-
 
 std::string to_string_Ww(int day_of_week, bool uppercase) {
     const char* day_of_week_str_W[] = {

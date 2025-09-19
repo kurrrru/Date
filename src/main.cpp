@@ -95,6 +95,8 @@ int main() {
     test_parse_non_proleptic_gregorian("1582114", "%Y%M%D", true, false);
     test_parse_non_proleptic_gregorian("1582/10/14", "%Y/%M/%D", true, false);
     test_parse_non_proleptic_gregorian("1582/10/15", "%Y/%M/%D", true, true);
+    test_parse_non_proleptic_gregorian("1582/10/%D15", "%Y/%M/%D%D", true, false);
+    test_parse_non_proleptic_gregorian("1582/10/%D15", "%Y/%M/%D%D", false, false);
 
     date = toolbox::Date(toolbox::GREGORIAN, toolbox::GregorianCalendar::BC, 46, 12, 30);
     std::cout << date.to_string(toolbox::GREGORIAN, "%E%y-%m-%d") << std::endl;

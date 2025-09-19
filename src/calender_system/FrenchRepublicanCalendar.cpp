@@ -51,20 +51,24 @@ int FrenchRepublicanCalendar::to_serial_date(int era,
     const int start_year = 1;
     const int end_year = 14;
     if (era < 0 || era >= END_OF_ERA) {
-        throw std::out_of_range("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::out_of_range(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "Invalid era: " + toolbox::to_string(era));
     }
     if (year < start_year || year > end_year) {
-        throw std::out_of_range("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::out_of_range(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "year must be in " + toolbox::to_string(start_year)
             + ".." + toolbox::to_string(end_year));
     }
     if (month < 1 || month > 13) {
-        throw std::out_of_range("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::out_of_range(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "month must be in 1..13");
     }
     if (day < 1 || day > last_day_of_month(year, month)) {
-        throw std::out_of_range("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::out_of_range(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "day is out of range for month " + toolbox::to_string(month));
     }
 
@@ -82,7 +86,8 @@ int FrenchRepublicanCalendar::to_serial_date(int era,
 int FrenchRepublicanCalendar::to_serial_date(const std::string& date_str,
         const char* format, bool strict) const {
     if (!format) {
-        throw std::invalid_argument("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::invalid_argument(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "format is null");
     }
     int era = FrenchRepublicanCalendar::AD;
@@ -98,7 +103,8 @@ int FrenchRepublicanCalendar::to_serial_date(const std::string& date_str,
         serial,
         strict);
     if (!all_found) {
-        throw std::invalid_argument("FrenchRepublicanCalendar::to_serial_date failed: "
+        throw std::invalid_argument(
+            "FrenchRepublicanCalendar::to_serial_date failed: "
             "date_str does not match format");
     }
     return serial;
@@ -111,13 +117,14 @@ void FrenchRepublicanCalendar::from_serial_date(int serial_date,
     const int end_serial = gregorian.to_serial_date(
         GregorianCalendar::AD, 1806, 12, 31);
     if (serial_date < start_serial || serial_date > end_serial) {
-        throw std::out_of_range("FrenchRepublicanCalendar::from_serial_date failed: "
+        throw std::out_of_range(
+            "FrenchRepublicanCalendar::from_serial_date failed: "
             "serial_date is out of range");
     }
     const int z = serial_date - start_serial;
-    const int era_year = z / 1461; // 4 years
+    const int era_year = z / 1461;  // 4 years
     const int doe = z - era_year * 1461;
-    const int yoe = (doe - doe / 1095) / 365; // Leap year (3, 7, 11)
+    const int yoe = (doe - doe / 1095) / 365;  // Leap year (3, 7, 11)
     year = era_year * 4 + yoe + 1;
     const int doy = doe - (yoe * 365 + (yoe + 1) / 4);
     month = doy / 30 + 1;
@@ -128,11 +135,14 @@ void FrenchRepublicanCalendar::from_serial_date(int serial_date,
 void FrenchRepublicanCalendar::from_serial_date(int serial_date,
         std::string& date_str, const char* format) const {
     if (!format) {
-        throw std::invalid_argument("FrenchRepublicanCalendar::from_serial_date failed: "
+        throw std::invalid_argument(
+            "FrenchRepublicanCalendar::from_serial_date failed: "
             "format is null");
     }
-    int era = 0, year = 0, month = 0, day = 0;
+    int era, year, month, day;
     from_serial_date(serial_date, era, year, month, day);
+    int day_of_week;
+    from_serial_date(serial_date, day_of_week);
     std::ostringstream ss;
     for (std::size_t i = 0; format[i]; ++i) {
         if (format[i] == '%') {
@@ -154,16 +164,17 @@ void FrenchRepublicanCalendar::from_serial_date(int serial_date,
                     ss << to_string_Dd(month, day, std::isupper(format[i]));
                     break;
                 case 'W':
-                case 'w': {
-                    int day_of_week = 0;
-                    from_serial_date(serial_date, day_of_week);
+                case 'w':
                     ss << to_string_Ww(day_of_week, std::isupper(format[i]));
                     break;
-                }
+                case '%':
+                    ss << '%';
+                    break;
                 default:
                     throw std::invalid_argument(
                         "FrenchRepublicanCalendar::from_serial_date failed: "
-                        "Invalid format specifier: %" + toolbox::to_string(format[i]));
+                        "Invalid format specifier: %"
+                        + toolbox::to_string(format[i]));
             }
         } else {
             ss << format[i];
@@ -176,14 +187,8 @@ void FrenchRepublicanCalendar::from_serial_date(int serial_date,
         int& day_of_week) const {
     int era, year, month, day;
     from_serial_date(serial_date, era, year, month, day);
-    day_of_week = (day - 1) % 10; // 10-day week
+    day_of_week = (day - 1) % 10;  // 10-day week
 }
-
-// Private methods ... parse_Ddのときに、monthも設定される可能性があることに注意する。
-// ParseDdのときは、day, monthを変更するが、flagについてはday_foundのみをtrueにする。
-// monthにすでに値が設定されていて、矛盾がある場合は、例外を投げる。
-// 同様に、parse_Mmのときにmonthのflagは立っていないが、monthに値が設定される可能性がある。
-// 矛盾があれば、例外を投げる。
 
 void FrenchRepublicanCalendar::parse_formatted_date(const std::string& date_str,
     std::size_t pos,
@@ -194,8 +199,7 @@ void FrenchRepublicanCalendar::parse_formatted_date(const std::string& date_str,
     int& day, bool day_found,
     bool& all_found,
     int& serial,
-    bool strict
-) const {
+    bool strict) const {
     if (pos >= date_str.size() && !*format) {
         if (year_found && month_found && day_found) {
             try {
@@ -215,7 +219,10 @@ void FrenchRepublicanCalendar::parse_formatted_date(const std::string& date_str,
         }
         return;
     }
-    if (date_str[pos] == format[0]) {
+    if (pos >= date_str.size() || !*format) {
+        return;
+    }
+    if (date_str[pos] == format[0] && format[0] != '%') {
         parse_formatted_date(date_str, pos + 1, format + 1,
             era, era_found,
             year, year_found,
@@ -298,6 +305,20 @@ void FrenchRepublicanCalendar::parse_formatted_date(const std::string& date_str,
                 strict);
             return;
         }
+        case '%': {
+            if (date_str[pos] != '%') {
+                return;
+            }
+            parse_formatted_date(date_str, pos + 1, format + 2,
+                era, era_found,
+                year, year_found,
+                month, month_found,
+                day, day_found,
+                all_found,
+                serial,
+                strict);
+            return;
+        }
         default:
             throw std::invalid_argument(
                 "FrenchRepublicanCalendar::parse_formatted_date failed: "
@@ -341,7 +362,7 @@ void FrenchRepublicanCalendar::parse_Ee(const std::string& date_str,
     }
     throw std::invalid_argument(
         "FrenchRepublicanCalendar::parse_Ee failed: "
-        "Invalid era string in date_str at position "
+        "era not found in date_str at position "
         + toolbox::to_string(pos));
 }
 
@@ -388,9 +409,6 @@ void FrenchRepublicanCalendar::parse_Yy(const std::string& date_str,
     } else {
         // %y
         if (pos + 2 > date_str.size()) {
-            return;
-        }
-        if (!std::isdigit(date_str[pos]) || !std::isdigit(date_str[pos + 1])) {
             return;
         }
         std::string year_str = date_str.substr(pos, 2);
@@ -469,7 +487,7 @@ void FrenchRepublicanCalendar::parse_Mm(const std::string& date_str,
                 continue;
             }
             if (!updated && !month_found && month != 0 && month != m) {
-                continue; // Value conflict
+                continue;  // Value conflict
             }
             updated = (month != m);
             month = m;
@@ -535,7 +553,7 @@ void FrenchRepublicanCalendar::parse_Dd(const std::string& date_str,
             if (month_found && month != m) {
                 continue;
             }
-            const int last_day = last_day_of_month(3, m); // leap year
+            const int last_day = last_day_of_month(3, m);  // leap year
             for (int d = 1; d <= last_day; ++d) {
                 std::string day_name = get_day_name(m, d);
                 const std::size_t len = day_name.size();
@@ -744,17 +762,17 @@ std::string get_day_of_week_name(int day_of_week) {
 }
 
 std::string to_string_Ee(int era, bool uppercase) {
-    const char *era_str_E[] = {
+    const char* era_str_E[] = {
         /* [toolbox::FrenchRepublicanCalendar::AD] = */ "A.D.",
     };
-    const char *era_str_e[] = {
+    const char* era_str_e[] = {
         /* [toolbox::FrenchRepublicanCalendar::AD] = */ "AD",
     };
     if (era < 0 || era >= toolbox::FrenchRepublicanCalendar::END_OF_ERA) {
-        throw std::out_of_range("to_string_Ee failed: Invalid era: "
-            + toolbox::to_string(era));
+        throw std::out_of_range(
+            "to_string_Ee failed: Invalid era: " + toolbox::to_string(era));
     }
-    return uppercase ? era_str_E[era] : era_str_e[era]; 
+    return uppercase ? era_str_E[era] : era_str_e[era];
 }
 
 std::string to_string_Yy(int year, bool uppercase) {

@@ -208,7 +208,7 @@ void GregorianCalendar::parse_formatted_date(const std::string& date_str,
     if (pos >= date_str.size() || !*format) {
         return;
     }
-    if (date_str[pos] == format[0]) {
+    if (date_str[pos] == format[0] && format[0] != '%') {
         parse_formatted_date(date_str, pos + 1, format + 1,
             era, era_found,
             year, year_found,
