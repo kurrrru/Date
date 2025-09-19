@@ -131,7 +131,7 @@ void NonProlepticGregorianCalendar::parse_formatted_date(
     if (pos >= date_str.size() || !*format) {
         return;
     }
-    if (date_str[pos] == format[0]) {
+    if (date_str[pos] == format[0] && format[0] != '%') {
         parse_formatted_date(date_str, pos + 1, format + 1,
             era, era_found,
             year, year_found,
@@ -277,8 +277,8 @@ void NonProlepticGregorianCalendar::parse_Ee(const std::string& date_str,
         }
     }
     throw std::invalid_argument(
-        "NonProlepticGregorianCalendar::"
-        "parse_Ee failed: era not found in date_str at position "
+        "NonProlepticGregorianCalendar::parse_Ee failed: "
+        "era not found in date_str at position "
         + toolbox::to_string(pos));
 }
 

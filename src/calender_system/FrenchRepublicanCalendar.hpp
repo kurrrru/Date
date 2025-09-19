@@ -11,7 +11,7 @@ class FrenchRepublicanCalendar : public ICalendarSystem {
     FrenchRepublicanCalendar();
     FrenchRepublicanCalendar(const FrenchRepublicanCalendar& other);
     FrenchRepublicanCalendar& operator=(
-        
+
     const FrenchRepublicanCalendar& other);
     ~FrenchRepublicanCalendar();
 
@@ -31,7 +31,6 @@ class FrenchRepublicanCalendar : public ICalendarSystem {
     };
 
  private:
-    
     void parse_formatted_date(const std::string& date_str,
         std::size_t pos,
         const char* format,
