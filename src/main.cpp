@@ -8,6 +8,7 @@
 #include <calender_system/NonProlepticGregorianCalendar.hpp>
 #include <calender_system/JulianCalendar.hpp>
 #include <calender_system/EthiopianCalendar.hpp>
+#include <calender_system/FrenchRepublicanCalendar.hpp>
 
 void test_parse_gregorian(const std::string& date_str, const char* format, bool strict, bool expect_success) {
     static int test_num = 0;
@@ -131,4 +132,26 @@ int main() {
     date += 1;
     std::cout << date.to_string(toolbox::JULIAN, "%Y-%m-%d") << std::endl;
     date -= 1;
+
+    // french republican calendar
+    date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, toolbox::FrenchRepublicanCalendar::AD, 1, 1, 1);
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, toolbox::FrenchRepublicanCalendar::AD, 14, 4, 10);
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, toolbox::FrenchRepublicanCalendar::AD, 3, 13, 6);
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    date++;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, "Raisin 1, 11", "%d %M, %Y", true);
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
 }
