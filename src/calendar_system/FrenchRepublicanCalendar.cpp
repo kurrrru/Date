@@ -1,4 +1,4 @@
-#include <calender_system/FrenchRepublicanCalendar.hpp>
+#include <calendar_system/FrenchRepublicanCalendar.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include <string.hpp>
-#include <calender_system/GregorianCalendar.hpp>
+#include <calendar_system/GregorianCalendar.hpp>
 
 namespace {
 bool is_leap(int year);

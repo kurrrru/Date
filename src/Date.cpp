@@ -4,12 +4,12 @@
 #include <string>
 #include <ctime>
 
-#include <calender_system/GregorianCalendar.hpp>
-#include <calender_system/NonProlepticGregorianCalendar.hpp>
-#include <calender_system/JulianCalendar.hpp>
-#include <calender_system/EthiopianCalendar.hpp>
-#include <calender_system/JapaneseWarekiCalendar.hpp>
-#include <calender_system/FrenchRepublicanCalendar.hpp>
+#include <calendar_system/GregorianCalendar.hpp>
+#include <calendar_system/NonProlepticGregorianCalendar.hpp>
+#include <calendar_system/JulianCalendar.hpp>
+#include <calendar_system/EthiopianCalendar.hpp>
+#include <calendar_system/JapaneseWarekiCalendar.hpp>
+#include <calendar_system/FrenchRepublicanCalendar.hpp>
 
 namespace {
 toolbox::GregorianCalendar gregorian_calendar;
