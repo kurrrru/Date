@@ -156,4 +156,21 @@ int main() {
     std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
     std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
     std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+
+    try {
+        date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, "Raisin 2, 11", "%d %M, %Y", true);
+        std::cout << "NG" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "OK" << std::endl;
+    }
+    date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, "Jour de la Revolution 13, 11", "%d %M, %Y", false);
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%m-%d") << std::endl;
+    std::cout << date.to_string(toolbox::FRENCH_REPUBLICAN, "%Y-%M-%D") << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d") << std::endl;
+    try {
+        date = toolbox::Date(toolbox::FRENCH_REPUBLICAN, "Jour de la Revolution 13, 10", "%d %M, %Y", false);
+        std::cout << "NG" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "OK" << std::endl;
+    }
 }
