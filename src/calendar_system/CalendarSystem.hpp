@@ -7,7 +7,8 @@ enum CalendarSystem {
     NON_PROLEPTIC_GREGORIAN,
     JULIAN,
     ETHIOPIAN,
-    FRENCH_REPUBLICAN
+    FRENCH_REPUBLICAN,
+    JAPANESE_WAREKI
     // JAPANESE_WAREKI,
     // Add more calendar systems as needed
 };
