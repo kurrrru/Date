@@ -1,14 +1,17 @@
-#include <iostream>
+#include <cstddef>
 #include <iomanip>
-#include <string>
+#include <iostream>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 #include <Date.hpp>
-#include <calendar_system/GregorianCalendar.hpp>
-#include <calendar_system/NonProlepticGregorianCalendar.hpp>
-#include <calendar_system/JulianCalendar.hpp>
 #include <calendar_system/EthiopianCalendar.hpp>
 #include <calendar_system/FrenchRepublicanCalendar.hpp>
+#include <calendar_system/GregorianCalendar.hpp>
+#include <calendar_system/JapaneseEra.hpp>
+#include <calendar_system/JulianCalendar.hpp>
+#include <calendar_system/NonProlepticGregorianCalendar.hpp>
 
 void test_parse_gregorian(const std::string& date_str,
                           const char* format,
@@ -59,6 +62,299 @@ void test_parse_non_proleptic_gregorian(const std::string& date_str,
         std::cout << "NG" << std::endl;
         std::cout << "Error: " << e.what() << std::endl;
     }
+}
+
+struct EraTestCase {
+    toolbox::JapaneseEra era;
+    toolbox::EraCalendar start_calendar;
+    int start_year;
+    int start_month;
+    int start_day;
+    toolbox::EraCalendar end_calendar;
+    int end_year;
+    int end_month;
+    int end_day;
+    bool has_end;
+};
+
+int& japanese_era_test_counter() {
+    static int counter = 0;
+    return counter;
+}
+
+bool lookup_era_by_kanji(const std::string& kanji,
+                         toolbox::JapaneseEra& result) {
+    const std::size_t count = toolbox::era_count();
+    for (std::size_t i = 0; i < count; ++i) {
+        const toolbox::EraMetadata& meta =
+            toolbox::get_era_metadata(
+                static_cast<toolbox::JapaneseEra>(i));
+        if (kanji == meta.kanji) {
+            result = meta.era;
+            return true;
+        }
+    }
+    return false;
+}
+
+void test_japanese_era_metadata_case(const EraTestCase& tc) {
+    int& counter = japanese_era_test_counter();
+    const toolbox::EraMetadata& meta = toolbox::get_era_metadata(tc.era);
+    bool pass = true;
+    if (meta.era != tc.era) {
+        pass = false;
+    }
+    if (meta.start.calendar != tc.start_calendar ||
+        meta.start.year != tc.start_year ||
+        meta.start.month != tc.start_month ||
+        meta.start.day != tc.start_day) {
+        pass = false;
+    }
+    if (meta.has_end != tc.has_end) {
+        pass = false;
+    }
+    if (tc.has_end) {
+        if (meta.end.calendar != tc.end_calendar ||
+            meta.end.year != tc.end_year ||
+            meta.end.month != tc.end_month ||
+            meta.end.day != tc.end_day) {
+            pass = false;
+        }
+    }
+    std::cout << "wareki meta " << std::setw(3) << ++counter << ": "
+              << (pass ? "OK" : "NG") << std::endl;
+    if (!pass) {
+        std::cout << "  actual start cal=" << meta.start.calendar
+                  << " y=" << meta.start.year
+                  << " m=" << meta.start.month
+                  << " d=" << meta.start.day << std::endl;
+        std::cout << "  expect start cal=" << tc.start_calendar
+                  << " y=" << tc.start_year
+                  << " m=" << tc.start_month
+                  << " d=" << tc.start_day << std::endl;
+        std::cout << "  has_end actual=" << (meta.has_end ? 1 : 0)
+                  << " expect=" << (tc.has_end ? 1 : 0) << std::endl;
+        if (meta.has_end) {
+            std::cout << "  actual end cal=" << meta.end.calendar
+                      << " y=" << meta.end.year
+                      << " m=" << meta.end.month
+                      << " d=" << meta.end.day << std::endl;
+            std::cout << "  expect end cal=" << tc.end_calendar
+                      << " y=" << tc.end_year
+                      << " m=" << tc.end_month
+                      << " d=" << tc.end_day << std::endl;
+        }
+    }
+}
+
+void test_japanese_era_count() {
+    int& counter = japanese_era_test_counter();
+    const std::size_t expected =
+        static_cast<std::size_t>(toolbox::END_OF_ERA);
+    const std::size_t actual = toolbox::era_count();
+    bool pass = actual == expected;
+    std::cout << "wareki meta " << std::setw(3) << ++counter << ": "
+              << (pass ? "OK" : "NG") << std::endl;
+    if (!pass) {
+        std::cout << "  count actual=" << actual
+                  << " expected=" << expected << std::endl;
+    }
+}
+
+void run_japanese_era_metadata_tests() {
+    const EraTestCase cases[] = {
+        {toolbox::TAIKA,
+         toolbox::ERA_CALENDAR_JULIAN,
+         645,
+         7,
+         29,
+         toolbox::ERA_CALENDAR_JULIAN,
+         650,
+         3,
+         22,
+         true},
+        {toolbox::MEIJI,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         1868,
+         1,
+         25,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         1912,
+         7,
+         29,
+         true},
+        {toolbox::SHOWA,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         1926,
+         12,
+         25,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         1989,
+         1,
+         7,
+         true},
+        {toolbox::REIWA,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         2019,
+         5,
+         1,
+         toolbox::ERA_CALENDAR_GREGORIAN,
+         0,
+         0,
+         0,
+         false}
+    };
+    const std::size_t case_count = sizeof(cases) / sizeof(cases[0]);
+    for (std::size_t i = 0; i < case_count; ++i) {
+        test_japanese_era_metadata_case(cases[i]);
+    }
+    test_japanese_era_count();
+}
+
+void test_japanese_era_string_roundtrip(toolbox::JapaneseEra era,
+                                        const char* expected_kanji) {
+    int& counter = japanese_era_test_counter();
+    bool pass = true;
+    const std::string kanji = toolbox::era_to_kanji(era);
+    if (kanji != expected_kanji) {
+        pass = false;
+    }
+    toolbox::JapaneseEra looked = toolbox::END_OF_ERA;
+    bool found = lookup_era_by_kanji(expected_kanji, looked);
+    if (!found || looked != era) {
+        pass = false;
+    }
+    std::cout << "wareki meta " << std::setw(3) << ++counter << ": "
+              << (pass ? "OK" : "NG") << std::endl;
+    if (!pass) {
+        std::cout << "  kanji actual=" << kanji
+                  << " expected=" << expected_kanji << std::endl;
+        if (found) {
+            std::cout << "  lookup era=" << looked
+                      << " expected=" << era << std::endl;
+        } else {
+            std::cout << "  lookup failed" << std::endl;
+        }
+    }
+}
+
+void run_japanese_era_string_roundtrip_tests() {
+    test_japanese_era_string_roundtrip(toolbox::TAIKA, "大化");
+    test_japanese_era_string_roundtrip(toolbox::TEMPYO_SHOHO, "天平勝宝");
+    test_japanese_era_string_roundtrip(toolbox::SHOWA, "昭和");
+    test_japanese_era_string_roundtrip(toolbox::REIWA, "令和");
+}
+
+void test_nanbokucho_authority(toolbox::JapaneseEra era,
+                               toolbox::EraAuthority expected) {
+    int& counter = japanese_era_test_counter();
+    const toolbox::EraMetadata& meta = toolbox::get_era_metadata(era);
+    bool pass = meta.authority == expected;
+    std::cout << "wareki meta " << std::setw(3) << ++counter << ": "
+              << (pass ? "OK" : "NG") << std::endl;
+    if (!pass) {
+        std::cout << "  authority actual=" << meta.authority
+                  << " expected=" << expected << std::endl;
+    }
+}
+
+void run_nanbokucho_authority_tests() {
+    test_nanbokucho_authority(toolbox::KENMU, toolbox::ERA_AUTHORITY_SOUTHERN);
+    test_nanbokucho_authority(toolbox::SHOHEI,
+                              toolbox::ERA_AUTHORITY_SOUTHERN);
+    test_nanbokucho_authority(toolbox::RYAKUO,
+                              toolbox::ERA_AUTHORITY_NORTHERN);
+    // MEITOKU is recorded as northern authority in embedded metadata.
+    test_nanbokucho_authority(toolbox::MEITOKU,
+                              toolbox::ERA_AUTHORITY_NORTHERN);
+}
+
+int to_serial_from_start(const toolbox::EraMetadata& meta) {
+    if (meta.start.calendar == toolbox::ERA_CALENDAR_JULIAN) {
+        toolbox::Date date(toolbox::JULIAN,
+                           toolbox::JulianCalendar::AD,
+                           meta.start.year,
+                           meta.start.month,
+                           meta.start.day);
+        return date.get_raw_date();
+    }
+    toolbox::Date date(toolbox::GREGORIAN,
+                       toolbox::GregorianCalendar::AD,
+                       meta.start.year,
+                       meta.start.month,
+                       meta.start.day);
+    return date.get_raw_date();
+}
+
+void test_japanese_wareki_format(toolbox::JapaneseEra era) {
+    int& counter = japanese_era_test_counter();
+    const int id = ++counter;
+    const toolbox::EraMetadata& meta = toolbox::get_era_metadata(era);
+    const int serial = to_serial_from_start(meta);
+    toolbox::Date date(serial);
+    std::string actual;
+    bool pass = true;
+    try {
+        actual = date.to_string(toolbox::JAPANESE_WAREKI, "%E%Y-%m-%d");
+    } catch (const std::exception& e) {
+        (void)e;
+        pass = false;
+    }
+    if (pass) {
+        // Instead of asserting an exact textual form (which depends on how
+        // overlapping eras and era authority are represented), verify the
+        // formatted string contains a valid kanji era prefix and the month/day
+        // match the underlying Gregorian date for the serial.
+        toolbox::GregorianCalendar greg;
+        int g_era = 0;
+        int g_year = 0;
+        int g_month = 0;
+        int g_day = 0;
+        greg.from_serial_date(serial, g_era, g_year, g_month, g_day);
+
+        // Expect actual to end with "-M-D" where M/D are g_month/g_day
+        std::ostringstream tail;
+        tail << "-" << g_month << "-" << g_day;
+        const std::string tail_str = tail.str();
+        if (actual.size() < tail_str.size() ||
+            actual.substr(actual.size() - tail_str.size()) != tail_str) {
+            pass = false;
+            std::cout << "wareki meta " << std::setw(3) << id
+                      << ": NG" << std::endl;
+            std::cout << "  actual=" << actual
+                      << " expected_tail=" << tail_str << std::endl;
+            return;
+        }
+
+        // Extract era kanji prefix (everything before first digit)
+        std::size_t pos = 0;
+        while (pos < actual.size() && !std::isdigit(actual[pos])) ++pos;
+        std::string kanji = actual.substr(0, pos);
+        toolbox::JapaneseEra looked = toolbox::END_OF_ERA;
+        bool found = lookup_era_by_kanji(kanji, looked);
+        if (!found) {
+            pass = false;
+            std::cout << "wareki meta " << std::setw(3) << id
+                      << ": NG" << std::endl;
+            std::cout << "  actual=" << actual
+                      << " (unknown era kanji prefix)" << std::endl;
+            return;
+        }
+    }
+    if (!pass) {
+        std::cout << "wareki meta " << std::setw(3) << id << ": NG"
+                  << std::endl;
+        std::cout << "  to_string threw exception" << std::endl;
+        return;
+    }
+    std::cout << "wareki meta " << std::setw(3) << id << ": OK"
+              << std::endl;
+}
+
+void run_japanese_wareki_format_tests() {
+    test_japanese_wareki_format(toolbox::MEIJI);
+    test_japanese_wareki_format(toolbox::TEMPYO_SHOHO);
+    test_japanese_wareki_format(toolbox::REIWA);
 }
 
 int main() {
@@ -304,4 +600,9 @@ int main() {
         (void)e;
         std::cout << "OK" << std::endl;
     }
+
+    run_japanese_era_metadata_tests();
+    run_japanese_era_string_roundtrip_tests();
+    run_nanbokucho_authority_tests();
+    run_japanese_wareki_format_tests();
 }

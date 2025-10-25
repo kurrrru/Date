@@ -79,81 +79,83 @@ bool parse_japanese_calendar_date(const std::string &token,
     return true;
 }
 
-// Load era ranges from data/data.csv. If file missing, returns empty vector.
+// Build era ranges from embedded era metadata. This replaces the previous
+// runtime CSV loader so that the program does not depend on data/data.csv
+// at runtime. Each EraMetadata entry is converted to an EraRange with
+// computed start/end serials using the appropriate calendar system.
 std::vector<EraRange> load_era_ranges() {
     std::vector<EraRange> ranges;
-    std::ifstream ifs("data/data.csv");
-    if (!ifs) {
-        return ranges;
-    }
     toolbox::JulianCalendar julian;
     toolbox::GregorianCalendar greg;
-    std::string line;
-    // Skip header
-    std::getline(ifs, line);
-    int idx = 0;
-    while (std::getline(ifs, line)) {
-        if (line.empty()) {
-            ++idx;
-            continue;
-        }
-        std::istringstream ss(line);
-        std::string kanji, reading, start_tok, end_tok;
-        std::getline(ss, kanji, ',');
-        std::getline(ss, reading, ',');
-        std::getline(ss, start_tok, ',');
-        std::getline(ss, end_tok, ',');
-        // trim
-        while (!start_tok.empty() && (start_tok[0] == ' ')) {
-            start_tok.erase(0, 1);
-        }
-        while (!end_tok.empty() && (end_tok[0] == ' ')) {
-            end_tok.erase(0, 1);
-        }
 
+    const std::size_t count = toolbox::era_count();
+    for (std::size_t idx = 0; idx < count; ++idx) {
+        const toolbox::EraMetadata &md = toolbox::get_era_metadata(
+            static_cast<toolbox::JapaneseEra>(idx));
         EraRange er;
-        er.era = static_cast<toolbox::JapaneseEra>(idx);
-        er.name_kanji = kanji;
-    er.is_southern = (kanji.find("南朝") != std::string::npos ||
-              kanji.find("南") != std::string::npos);
+        er.era = md.era;
+        er.name_kanji = md.kanji ? std::string(md.kanji) : std::string();
+        er.is_southern = (md.authority == toolbox::ERA_AUTHORITY_SOUTHERN);
+
         int sserial = std::numeric_limits<int>::min();
         int eserial = std::numeric_limits<int>::max();
-        if (!start_tok.empty()) {
-            // handle cases like "(大覚寺統: ユリウス暦1331年9月11日) ..."
-            std::string token = start_tok;
-            // if contains '(', try to find first calendar date inside
-            std::size_t pos = token.find("ユリウス暦");
-            if (pos == std::string::npos) {
-                pos = token.find("グレゴリオ暦");
+
+        // Compute start serial
+        try {
+            if (md.start.calendar == toolbox::ERA_CALENDAR_JULIAN) {
+                int era_flag = (md.start.year <= 0)
+                    ? toolbox::JulianCalendar::BC
+                    : toolbox::JulianCalendar::AD;
+                sserial = julian.to_serial_date(era_flag,
+                                                md.start.year,
+                                                md.start.month,
+                                                md.start.day);
+            } else {
+                int era_flag = (md.start.year <= 0)
+                    ? toolbox::GregorianCalendar::BC
+                    : toolbox::GregorianCalendar::AD;
+                sserial = greg.to_serial_date(era_flag,
+                                              md.start.year,
+                                              md.start.month,
+                                              md.start.day);
             }
-            if (pos != std::string::npos) {
-                // take substring from pos to end of token
-                std::string sub = token.substr(pos);
-                int tmp;
-                if (parse_japanese_calendar_date(sub, julian, greg, tmp)) {
-                    sserial = tmp;
+        } catch (...) {
+            sserial = std::numeric_limits<int>::min();
+        }
+
+        // Compute end serial (exclusive in metadata -> make inclusive here)
+        if (md.has_end) {
+            try {
+                int tmp = std::numeric_limits<int>::max();
+                if (md.end.calendar == toolbox::ERA_CALENDAR_JULIAN) {
+                    int era_flag = (md.end.year <= 0)
+                        ? toolbox::JulianCalendar::BC
+                        : toolbox::JulianCalendar::AD;
+                    tmp = julian.to_serial_date(era_flag,
+                                                md.end.year,
+                                                md.end.month,
+                                                md.end.day);
+                } else {
+                    int era_flag = (md.end.year <= 0)
+                        ? toolbox::GregorianCalendar::BC
+                        : toolbox::GregorianCalendar::AD;
+                    tmp = greg.to_serial_date(era_flag,
+                                              md.end.year,
+                                              md.end.month,
+                                              md.end.day);
                 }
+                // metadata end is inclusive-exclusion boundary; use inclusive
+                if (tmp != std::numeric_limits<int>::max()) {
+                    eserial = tmp - 1;
+                }
+            } catch (...) {
+                eserial = std::numeric_limits<int>::max();
             }
         }
-        if (!end_tok.empty() && end_tok != "None") {
-            std::string token = end_tok;
-            std::size_t pos = token.find("ユリウス暦");
-            if (pos == std::string::npos) {
-                pos = token.find("グレゴリオ暦");
-            }
-            if (pos != std::string::npos) {
-                std::string sub = token.substr(pos);
-                int tmp;
-                if (parse_japanese_calendar_date(sub, julian, greg, tmp)) {
-                    eserial = tmp - 1;  // make inclusive end
-                }
-            }
-        }
-        // if parsing failed: leave as extreme values
+
         er.start_serial = sserial;
         er.end_serial = eserial;
         ranges.push_back(er);
-        ++idx;
     }
     return ranges;
 }
@@ -194,22 +196,55 @@ int JapaneseWarekiCalendar::to_serial_date(int era,
         throw std::out_of_range(
             "JapaneseWarekiCalendar::to_serial_date failed: era start unknown");
     }
-    // Interpret year/month/day relative to era start: we compute serial of era
-    // start and then add (year-1) etc. For historical calendars this is
-    // non-trivial; here we simply compute the serial of the corresponding
-    // Gregorian/Julian date by attempting to map era start's calendar type
-    // (already encoded in source data) via load. For simplicity, if
-    // month/day/year are given, assume they are Gregorian dates for modern
-    // eras; otherwise throw. For now, treat input as Gregorian AD for
-    // conversion.
+
+    if (year <= 0) {
+        throw std::out_of_range(
+            "JapaneseWarekiCalendar::to_serial_date failed: year must be >= 1");
+    }
+
+    // Use embedded EraMetadata to determine which calendar to use and to
+    // map the era-relative year to an absolute calendar year.
+    const toolbox::EraMetadata &md = toolbox::get_era_metadata(
+        static_cast<toolbox::JapaneseEra>(era));
+
+    // Era-relative year N corresponds to calendar year: start.year + (N - 1).
+    int target_year = md.start.year + (year - 1);
+
     toolbox::GregorianCalendar greg;
+    toolbox::JulianCalendar julian;
+    int serial = 0;
     try {
-        return greg.to_serial_date(GregorianCalendar::AD, year, month, day);
+        if (md.start.calendar == toolbox::ERA_CALENDAR_JULIAN) {
+            int era_flag = (target_year <= 0)
+                ? toolbox::JulianCalendar::BC
+                : toolbox::JulianCalendar::AD;
+            serial = julian.to_serial_date(era_flag, target_year, month, day);
+        } else {
+            int era_flag = (target_year <= 0)
+                ? toolbox::GregorianCalendar::BC
+                : toolbox::GregorianCalendar::AD;
+            serial = greg.to_serial_date(era_flag, target_year, month, day);
+        }
     } catch (std::exception &e) {
         throw std::invalid_argument(
             std::string("JapaneseWarekiCalendar::to_serial_date failed: ") +
             e.what());
     }
+
+    // Validate against era bounds: start (inclusive) and end (inclusive if
+    // set).
+    if (serial < er.start_serial) {
+        throw std::out_of_range(
+            "JapaneseWarekiCalendar::to_serial_date failed: date is before "
+            "era start");
+    }
+    if (er.end_serial != std::numeric_limits<int>::max() &&
+        serial > er.end_serial) {
+        throw std::out_of_range(
+            "JapaneseWarekiCalendar::to_serial_date failed: date is after "
+            "era end");
+    }
+    return serial;
 }
 
 int JapaneseWarekiCalendar::to_serial_date(const std::string& date_str,
@@ -255,14 +290,34 @@ void JapaneseWarekiCalendar::from_serial_date(int serial_date,
             break;
         }
     }
+    // era: return the ordinal index of the era (which-era), not BC/AD.
     era = static_cast<int>(chosen->era);
-    // Compute year/month/day using GregorianCalendar for now (approximation).
+
+    // Compute year/month/day relative to the era start.
+    // Era start serial is available in chosen->start_serial (from
+    // load_era_ranges). Convert both start_serial and serial_date to
+    // Gregorian Y/M/D and compute offset in years. Year is 1-based: the
+    // start date is year 1.
     toolbox::GregorianCalendar greg;
-    int eera, y, m, d;
-    greg.from_serial_date(serial_date, eera, y, m, d);
-    year = y;
-    month = m;
-    day = d;
+    int dummy_era = 0;
+    int s_y = 0, s_m = 0, s_d = 0;
+    int g_y = 0, g_m = 0, g_d = 0;
+
+    // start_serial should be valid here (we skipped entries with unknown
+    // start).
+    greg.from_serial_date(chosen->start_serial, dummy_era, s_y, s_m, s_d);
+    greg.from_serial_date(serial_date, dummy_era, g_y, g_m, g_d);
+
+    int offset_year = g_y - s_y + 1;
+    // If current month/day is before start month/day then subtract one year.
+    if (g_m < s_m || (g_m == s_m && g_d < s_d)) {
+        --offset_year;
+    }
+    if (offset_year < 1) offset_year = 1;
+
+    year = offset_year;
+    month = g_m;
+    day = g_d;
 }
 
 void JapaneseWarekiCalendar::from_serial_date(int serial_date,
