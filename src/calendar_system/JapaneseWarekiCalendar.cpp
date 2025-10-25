@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <string.hpp>
+
 #include "calendar_system/GregorianCalendar.hpp"
 #include "calendar_system/JapaneseEra.hpp"
 #include "calendar_system/JulianCalendar.hpp"
@@ -23,61 +25,6 @@ struct EraRange {
     std::string name_kanji;
     bool is_southern;  // used for Nanboku-cho disambiguation
 };
-
-// Parse a date token like "ユリウス暦645年7月29日" or
-// "グレゴリオ暦1716年8月9日" and convert to serial using provided
-// calendars. Returns true on success.
-bool parse_japanese_calendar_date(const std::string &token,
-                                  const toolbox::JulianCalendar &julian,
-                                  const toolbox::GregorianCalendar &greg,
-                                  int &out_serial) {
-    // Look for known prefixes
-    std::size_t pos = std::string::npos;
-    bool is_julian = false;
-    if ((pos = token.find("ユリウス暦")) != std::string::npos) {
-        is_julian = true;
-    } else if ((pos = token.find("グレゴリオ暦")) != std::string::npos) {
-        is_julian = false;
-    } else {
-        return false;
-    }
-    // after prefix comes e.g. 645年7月29日
-    std::string rest = token.substr(pos + (is_julian ? 5 : 6));
-    int year = 0, month = 0, day = 0;
-    std::size_t p = 0;
-    // read integer year
-    while (p < rest.size() && !std::isdigit(rest[p])) ++p;
-    if (p == rest.size()) return false;
-    std::size_t q = p;
-    while (q < rest.size() && std::isdigit(rest[q])) ++q;
-    year = std::atoi(rest.substr(p, q - p).c_str());
-    // find month
-    p = q;
-    while (p < rest.size() && !std::isdigit(rest[p])) ++p;
-    if (p == rest.size()) return false;
-    q = p;
-    while (q < rest.size() && std::isdigit(rest[q])) ++q;
-    month = std::atoi(rest.substr(p, q - p).c_str());
-    // find day
-    p = q;
-    while (p < rest.size() && !std::isdigit(rest[p])) ++p;
-    if (p == rest.size()) return false;
-    q = p;
-    while (q < rest.size() && std::isdigit(rest[q])) ++q;
-    day = std::atoi(rest.substr(p, q - p).c_str());
-    try {
-        if (is_julian) {
-            out_serial = julian.to_serial_date(toolbox::JulianCalendar::AD,
-                                              year, month, day);
-        } else {
-            out_serial = greg.to_serial_date(toolbox::GregorianCalendar::AD,
-                                             year, month, day);
-        }
-    } catch (...) {
-        return false;
-    }
-    return true;
-}
 
 // Build era ranges from embedded era metadata. This replaces the previous
 // runtime CSV loader so that the program does not depend on data/data.csv
@@ -146,7 +93,7 @@ std::vector<EraRange> load_era_ranges() {
                 }
                 // metadata end is inclusive-exclusion boundary; use inclusive
                 if (tmp != std::numeric_limits<int>::max()) {
-                    eserial = tmp - 1;
+                    eserial = tmp;
                 }
             } catch (...) {
                 eserial = std::numeric_limits<int>::max();
@@ -250,12 +197,179 @@ int JapaneseWarekiCalendar::to_serial_date(int era,
 int JapaneseWarekiCalendar::to_serial_date(const std::string& date_str,
                                            const char* format,
                                            bool strict) const {
-    (void)date_str;
-    (void)format;
-    (void)strict;
-    throw std::invalid_argument(
-        "JapaneseWarekiCalendar::to_serial_date failed: parsing date string not"
-        " implemented");
+    if (!format) {
+        throw std::invalid_argument(
+            "JapaneseWarekiCalendar::to_serial_date failed: format is null");
+    }
+
+    const std::string& input = date_str;
+    const bool allow_trailing_whitespace = !strict;
+    std::size_t pos = 0;
+
+    bool era_found = false;
+    bool year_found = false;
+    bool month_found = false;
+    bool day_found = false;
+    toolbox::JapaneseEra era_value = toolbox::END_OF_ERA;
+    int year = 0;
+    int month = 0;
+    int day = 0;
+
+    auto parse_number = [&](const char* field_name) -> int {
+        std::size_t start = pos;
+        while (pos < input.size() &&
+               std::isdigit(static_cast<unsigned char>(input[pos]))) {
+            ++pos;
+        }
+        if (start == pos) {
+            throw std::invalid_argument(
+                std::string("JapaneseWarekiCalendar::to_serial_date failed: "
+                            "expected numeric ") + field_name);
+        }
+        try {
+            return toolbox::stoi(input.substr(start, pos - start));
+        } catch (const std::exception&) {
+            throw std::invalid_argument(
+                std::string("JapaneseWarekiCalendar::to_serial_date failed: "
+                            "invalid numeric ") + field_name);
+        }
+    };
+
+    for (std::size_t i = 0; format[i]; ++i) {
+        char ch = format[i];
+        if (ch != '%') {
+            if (pos >= input.size() || input[pos] != ch) {
+                throw std::invalid_argument(
+                    "JapaneseWarekiCalendar::to_serial_date failed: literal"
+                    " mismatch in date_str");
+            }
+            ++pos;
+            continue;
+        }
+
+        char spec = format[++i];
+        if (!spec) {
+            throw std::invalid_argument(
+                "JapaneseWarekiCalendar::to_serial_date failed: incomplete "
+                "format specifier");
+        }
+
+        switch (spec) {
+            case 'E':
+            case 'e': {
+                if (era_found) {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: era "
+                        "specified multiple times");
+                }
+                std::size_t matched_len = 0;
+                toolbox::JapaneseEra matched = toolbox::END_OF_ERA;
+                const std::size_t count = toolbox::era_count();
+                for (std::size_t idx = 0; idx < count; ++idx) {
+                    const toolbox::EraMetadata& md =
+                        toolbox::get_era_metadata(
+                            static_cast<toolbox::JapaneseEra>(idx));
+                    if (!md.kanji) {
+                        continue;
+                    }
+                    const std::string era_name(md.kanji);
+                    if (era_name.empty()) {
+                        continue;
+                    }
+                    const std::size_t len = era_name.size();
+                    if (pos + len > input.size()) {
+                        continue;
+                    }
+                    if (input.compare(pos, len, era_name) == 0 &&
+                        len > matched_len) {
+                        matched_len = len;
+                        matched = md.era;
+                    }
+                }
+                if (matched == toolbox::END_OF_ERA) {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: era "
+                        "not found in date_str");
+                }
+                era_value = matched;
+                era_found = true;
+                pos += matched_len;
+                break;
+            }
+            case 'Y':
+            case 'y': {
+                if (year_found) {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: year "
+                        "specified multiple times");
+                }
+                year = parse_number("year");
+                year_found = true;
+                break;
+            }
+            case 'M':
+            case 'm': {
+                if (month_found) {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: month"
+                        " specified multiple times");
+                }
+                month = parse_number("month");
+                month_found = true;
+                break;
+            }
+            case 'D':
+            case 'd': {
+                if (day_found) {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: day "
+                        "specified multiple times");
+                }
+                day = parse_number("day");
+                day_found = true;
+                break;
+            }
+            case '%': {
+                if (pos >= input.size() || input[pos] != '%') {
+                    throw std::invalid_argument(
+                        "JapaneseWarekiCalendar::to_serial_date failed: '%' expected in date_str");
+                }
+                ++pos;
+                break;
+            }
+            default:
+                throw std::invalid_argument(
+                    "JapaneseWarekiCalendar::to_serial_date failed: invalid "
+                    "format specifier");
+        }
+    }
+
+    if (!era_found || !year_found || !month_found || !day_found) {
+        throw std::invalid_argument(
+            "JapaneseWarekiCalendar::to_serial_date failed: incomplete "
+            "date components");
+    }
+
+    if (pos < input.size()) {
+        if (allow_trailing_whitespace) {
+            while (pos < input.size() &&
+                   std::isspace(static_cast<unsigned char>(input[pos]))) {
+                ++pos;
+            }
+        }
+        if (pos != input.size()) {
+            throw std::invalid_argument(
+                "JapaneseWarekiCalendar::to_serial_date failed: trailing "
+                "characters remain in date_str");
+        }
+    }
+
+    if (era_value == toolbox::END_OF_ERA) {
+        throw std::invalid_argument(
+            "JapaneseWarekiCalendar::to_serial_date failed: era missing");
+    }
+
+    return to_serial_date(static_cast<int>(era_value), year, month, day);
 }
 
 void JapaneseWarekiCalendar::from_serial_date(int serial_date,
@@ -309,8 +423,10 @@ void JapaneseWarekiCalendar::from_serial_date(int serial_date,
     greg.from_serial_date(serial_date, dummy_era, g_y, g_m, g_d);
 
     int offset_year = g_y - s_y + 1;
-    // If current month/day is before start month/day then subtract one year.
-    if (g_m < s_m || (g_m == s_m && g_d < s_d)) {
+    // For historical eras, the year counter increments with the calendar
+    // year, so only adjust when still inside the start calendar year.
+    if (g_y == s_y &&
+        (g_m < s_m || (g_m == s_m && g_d < s_d))) {
         --offset_year;
     }
     if (offset_year < 1) offset_year = 1;

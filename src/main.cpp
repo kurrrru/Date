@@ -77,7 +77,24 @@ struct EraTestCase {
     bool has_end;
 };
 
+struct WarekiConversionCase {
+    toolbox::JapaneseEra era;
+    int wareki_year;
+    int month;
+    int day;
+    toolbox::CalendarSystem reference_calendar;
+    int reference_era;
+    int reference_year;
+    int reference_month;
+    int reference_day;
+};
+
 int& japanese_era_test_counter() {
+    static int counter = 0;
+    return counter;
+}
+
+int& japanese_conversion_test_counter() {
     static int counter = 0;
     return counter;
 }
@@ -267,6 +284,141 @@ void run_nanbokucho_authority_tests() {
     // MEITOKU is recorded as northern authority in embedded metadata.
     test_nanbokucho_authority(toolbox::MEITOKU,
                               toolbox::ERA_AUTHORITY_NORTHERN);
+}
+
+void test_japanese_wareki_conversion_case(const WarekiConversionCase& tc) {
+    const char* fmt = "%E%Y-%m-%d";
+    int& counter = japanese_conversion_test_counter();
+    const int id = ++counter;
+    bool pass = true;
+    std::ostringstream failure;
+    try {
+        toolbox::Date wareki_date(toolbox::JAPANESE_WAREKI,
+                                  static_cast<int>(tc.era),
+                                  tc.wareki_year,
+                                  tc.month,
+                                  tc.day);
+        toolbox::Date reference_date(tc.reference_calendar,
+                                     tc.reference_era,
+                                     tc.reference_year,
+                                     tc.reference_month,
+                                     tc.reference_day);
+        if (wareki_date.get_raw_date() != reference_date.get_raw_date()) {
+            pass = false;
+            failure << "serial mismatch wareki=" << wareki_date.get_raw_date()
+                    << " reference=" << reference_date.get_raw_date()
+                    << "\n";
+        }
+
+        std::ostringstream expected_ss;
+        expected_ss << toolbox::era_to_kanji(tc.era)
+                    << tc.wareki_year
+                    << "-" << tc.month
+                    << "-" << tc.day;
+        const std::string expected_wareki = expected_ss.str();
+
+        try {
+            const std::string from_reference =
+                reference_date.to_string(toolbox::JAPANESE_WAREKI, fmt);
+            if (from_reference != expected_wareki) {
+                pass = false;
+                failure << "reference->wareki actual=" << from_reference
+                        << " expected=" << expected_wareki << "\n";
+            }
+        } catch (const std::exception& e) {
+            pass = false;
+            failure << "reference->wareki threw: " << e.what() << "\n";
+        }
+
+        try {
+            const std::string from_wareki =
+                wareki_date.to_string(toolbox::JAPANESE_WAREKI, fmt);
+            if (from_wareki != expected_wareki) {
+                pass = false;
+                failure << "wareki format actual=" << from_wareki
+                        << " expected=" << expected_wareki << "\n";
+            }
+        } catch (const std::exception& e) {
+            pass = false;
+            failure << "wareki format threw: " << e.what() << "\n";
+        }
+
+        try {
+            const std::string wareki_as_greg =
+                wareki_date.to_string(toolbox::GREGORIAN, fmt);
+            const std::string ref_as_greg =
+                reference_date.to_string(toolbox::GREGORIAN, fmt);
+            if (wareki_as_greg != ref_as_greg) {
+                pass = false;
+                failure << "gregorian mismatch wareki=" << wareki_as_greg
+                        << " reference=" << ref_as_greg << "\n";
+            }
+        } catch (const std::exception& e) {
+            pass = false;
+            failure << "gregorian format threw: " << e.what() << "\n";
+        }
+
+        try {
+            const std::string wareki_as_julian =
+                wareki_date.to_string(toolbox::JULIAN, fmt);
+            const std::string ref_as_julian =
+                reference_date.to_string(toolbox::JULIAN, fmt);
+            if (wareki_as_julian != ref_as_julian) {
+                pass = false;
+                failure << "julian mismatch wareki=" << wareki_as_julian
+                        << " reference=" << ref_as_julian << "\n";
+            }
+        } catch (const std::exception& e) {
+            pass = false;
+            failure << "julian format threw: " << e.what() << "\n";
+        }
+    } catch (const std::exception& e) {
+        pass = false;
+        failure << "construction threw: " << e.what() << "\n";
+    }
+
+    std::cout << "wareki conv " << std::setw(3) << id << ": "
+              << (pass ? "OK" : "NG") << std::endl;
+    const std::string detail = failure.str();
+    if (!pass && !detail.empty()) {
+        std::cout << detail;
+    }
+}
+
+void run_japanese_wareki_conversion_tests() {
+    const WarekiConversionCase cases[] = {
+        {toolbox::REIWA,
+         1,
+         5,
+         1,
+         toolbox::GREGORIAN,
+         toolbox::GregorianCalendar::AD,
+         2019,
+         5,
+         1},
+        {toolbox::SHOWA,
+         64,
+         1,
+         7,
+         toolbox::GREGORIAN,
+         toolbox::GregorianCalendar::AD,
+         1989,
+         1,
+         7},
+    {toolbox::HEISEI,
+     1,
+     1,
+     8,
+     toolbox::GREGORIAN,
+     toolbox::GregorianCalendar::AD,
+     1989,
+     1,
+     8}
+    };
+    const std::size_t case_count = sizeof(cases) / sizeof(cases[0]);
+    for (std::size_t i = 0; i < case_count; ++i) {
+        test_japanese_wareki_conversion_case(cases[i]);
+    }
 }
 
 int to_serial_from_start(const toolbox::EraMetadata& meta) {
@@ -605,4 +757,23 @@ int main() {
     run_japanese_era_string_roundtrip_tests();
     run_nanbokucho_authority_tests();
     run_japanese_wareki_format_tests();
+    run_japanese_wareki_conversion_tests();
+
+    try {
+        date = toolbox::Date::today();
+        std::cout << "Today: "
+                << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d")
+                << std::endl;
+        std::cout << "Today: "
+                << date.to_string(toolbox::JULIAN, "%Y-%m-%d")
+                << std::endl;
+        std::cout << "Today: "
+                << date.to_string(toolbox::ETHIOPIAN, "%Y-%M-%d")
+                << std::endl;
+        std::cout << "Today: "
+                << date.to_string(toolbox::JAPANESE_WAREKI, "%E%Y-%m-%d")
+                << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
 }
