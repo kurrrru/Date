@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <string.hpp>
 
@@ -384,7 +385,7 @@ void JapaneseWarekiCalendar::from_serial_date(int serial_date,
         const EraRange &er = ranges[i];
         if (er.start_serial == std::numeric_limits<int>::min()) continue;
         int s = er.start_serial;
-    int e = er.end_serial == std::numeric_limits<int>::max()
+        int e = er.end_serial == std::numeric_limits<int>::max()
             ? std::numeric_limits<int>::max()
             : er.end_serial;
         if (serial_date >= s && serial_date <= e) {
@@ -397,10 +398,10 @@ void JapaneseWarekiCalendar::from_serial_date(int serial_date,
             " serial date");
     }
     // If multiple matches (Nanboku-cho), prefer southern court
-    const EraRange *chosen = matches[0];
+    const EraRange *chosen = matches.back();
     for (std::size_t i = 0; i < matches.size(); ++i) {
-        if (matches[i]->is_southern) {
-            chosen = matches[i];
+        if (matches[matches.size() - 1 - i]->is_southern) {
+            chosen = matches[matches.size() - 1 - i];
             break;
         }
     }
@@ -413,23 +414,25 @@ void JapaneseWarekiCalendar::from_serial_date(int serial_date,
     // Gregorian Y/M/D and compute offset in years. Year is 1-based: the
     // start date is year 1.
     toolbox::GregorianCalendar greg;
+    toolbox::JulianCalendar julian;
     int dummy_era = 0;
     int s_y = 0, s_m = 0, s_d = 0;
     int g_y = 0, g_m = 0, g_d = 0;
 
+    const int greg_start = greg.to_serial_date(
+        toolbox::GregorianCalendar::AD, 1582, 10, 15);
+
     // start_serial should be valid here (we skipped entries with unknown
     // start).
-    greg.from_serial_date(chosen->start_serial, dummy_era, s_y, s_m, s_d);
-    greg.from_serial_date(serial_date, dummy_era, g_y, g_m, g_d);
+    if (serial_date < greg_start) {
+        julian.from_serial_date(chosen->start_serial, dummy_era, s_y, s_m, s_d);
+        julian.from_serial_date(serial_date, dummy_era, g_y, g_m, g_d);
+    } else {
+        greg.from_serial_date(chosen->start_serial, dummy_era, s_y, s_m, s_d);
+        greg.from_serial_date(serial_date, dummy_era, g_y, g_m, g_d);
+    }
 
     int offset_year = g_y - s_y + 1;
-    // For historical eras, the year counter increments with the calendar
-    // year, so only adjust when still inside the start calendar year.
-    if (g_y == s_y &&
-        (g_m < s_m || (g_m == s_m && g_d < s_d))) {
-        --offset_year;
-    }
-    if (offset_year < 1) offset_year = 1;
 
     year = offset_year;
     month = g_m;

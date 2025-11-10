@@ -458,11 +458,18 @@ void test_japanese_wareki_format(toolbox::JapaneseEra era) {
         // formatted string contains a valid kanji era prefix and the month/day
         // match the underlying Gregorian date for the serial.
         toolbox::GregorianCalendar greg;
+        toolbox::JulianCalendar julian;
+        const int greg_start = greg.to_serial_date(toolbox::GregorianCalendar::AD,
+            1582, 10, 15);
+
         int g_era = 0;
         int g_year = 0;
         int g_month = 0;
         int g_day = 0;
-        greg.from_serial_date(serial, g_era, g_year, g_month, g_day);
+        if (serial >= greg_start) 
+            greg.from_serial_date(serial, g_era, g_year, g_month, g_day);
+        else
+            julian.from_serial_date(serial, g_era, g_year, g_month, g_day);
 
         // Expect actual to end with "-M-D" where M/D are g_month/g_day
         std::ostringstream tail;
@@ -776,11 +783,11 @@ int main() {
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
     }
-    date = toolbox::Date(toolbox::JULIAN,
+    date = toolbox::Date(toolbox::GREGORIAN,
                          toolbox::EthiopianCalendar::AD,
-                         645,
-                         7,
-                         29);
+                         1593,
+                         1,
+                         10);
     std::cout << date.to_string(toolbox::JAPANESE_WAREKI, "%e%Y-%m-%d")
               << std::endl;
     std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d")
