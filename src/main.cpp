@@ -776,4 +776,13 @@ int main() {
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
     }
+    date = toolbox::Date(toolbox::JULIAN,
+                         toolbox::EthiopianCalendar::AD,
+                         645,
+                         7,
+                         29);
+    std::cout << date.to_string(toolbox::JAPANESE_WAREKI, "%e%Y-%m-%d")
+              << std::endl;
+    std::cout << date.to_string(toolbox::GREGORIAN, "%Y-%m-%d")
+              << std::endl;
 }
